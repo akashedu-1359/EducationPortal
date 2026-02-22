@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle, XCircle, Award, RotateCcw, Clock, Target } from "lucide-react";
 import { config } from "@/config";
-import { formatDate, formatTimer } from "@/lib/utils";
+import { formatTimer } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import type { ExamResult } from "@/types";
 

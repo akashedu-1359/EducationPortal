@@ -29,7 +29,7 @@ function getEnv(): AppEnv {
 // Load the JSON config for this environment.
 // Next.js statically resolves require() at build time — this is intentional.
 function loadEnvJson(env: AppEnv) {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
   return require(`../../config/environments/${env}.json`) as {
     apiUrl: string;
     appUrl: string;

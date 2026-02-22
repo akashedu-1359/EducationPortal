@@ -7,15 +7,11 @@ import {
   BookOpen,
   FileText,
   GraduationCap,
-  HelpCircle,
   LayoutDashboard,
-  Layers,
   Settings,
   Users,
   CreditCard,
   Award,
-  Flag,
-  Image,
   PanelLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle } from "lucide-react";
 import toast from "react-hot-toast";
@@ -9,7 +9,6 @@ import { paymentsApi } from "@/lib/payments";
 
 export default function CheckoutSuccessPage() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const ran = useRef(false);
 
   // For Stripe redirect flow — verify payment after redirect

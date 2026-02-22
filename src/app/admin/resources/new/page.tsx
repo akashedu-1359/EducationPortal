@@ -9,14 +9,13 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import toast from "react-hot-toast";
 import { resourcesApi } from "@/lib/resources";
-import { storageApi } from "@/lib/storage";
 import { getApiErrorMessage } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FileUpload } from "@/components/admin/FileUpload";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
-import type { ResourceType, PricingType, CreateResourceRequest } from "@/types";
+import type { PricingType, CreateResourceRequest } from "@/types";
 
 const schema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),

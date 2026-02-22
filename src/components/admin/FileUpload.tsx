@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Upload, X, CheckCircle, AlertCircle, File } from "lucide-react";
+import { Upload, CheckCircle, AlertCircle, File } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { storageApi } from "@/lib/storage";
 import { getApiErrorMessage } from "@/lib/api";

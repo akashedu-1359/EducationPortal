@@ -14,14 +14,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Modal, ConfirmModal } from "@/components/ui/modal";
-import { Select } from "@/components/ui/dropdown";
 import { Textarea } from "@/components/ui/textarea";
 import { TableRowSkeleton } from "@/components/ui/skeleton";
 import {
   Table, TableHeader, TableBody, TableRow,
   TableHead, TableCell, TableEmpty,
 } from "@/components/ui/table";
-import type { QuestionAdmin, QuestionType, DifficultyLevel, CreateQuestionRequest } from "@/types";
+import type { QuestionAdmin, CreateQuestionRequest } from "@/types";
 
 const DIFF_BADGE = {
   Easy: "success" as const,

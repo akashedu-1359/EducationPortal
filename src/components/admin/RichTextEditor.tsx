@@ -21,38 +21,6 @@ interface RichTextEditorProps {
   minHeight?: number;
 }
 
-// Toolbar button helper
-function ToolbarButton({
-  onClick,
-  active,
-  title,
-  children,
-}: {
-  onClick: () => void;
-  active?: boolean;
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      title={title}
-      onMouseDown={(e) => {
-        e.preventDefault();
-        onClick();
-      }}
-      className={cn(
-        "flex h-7 items-center rounded px-2 text-sm font-medium transition-colors",
-        active
-          ? "bg-primary-100 text-primary-700"
-          : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-      )}
-    >
-      {children}
-    </button>
-  );
-}
-
 export function RichTextEditor({
   value,
   onChange,

@@ -3,14 +3,13 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { CreditCard, Shield, CheckCircle, ArrowLeft } from "lucide-react";
+import { CreditCard, Shield, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { resourcesApi } from "@/lib/resources";
 import { paymentsApi } from "@/lib/payments";
-import { getApiErrorMessage, getAccessToken } from "@/lib/api";
+import { getApiErrorMessage } from "@/lib/api";
 import { config } from "@/config";
-import { formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useRequireAuth } from "@/hooks/useAuth";
@@ -28,7 +27,7 @@ export default function CheckoutPage({ params }: Props) {
   const [processing, setProcessing] = useState(false);
 
   // Fetch resource info for display
-  const { data: resource, isLoading: resourceLoading } = useQuery({
+  const { } = useQuery({
     queryKey: ["resource-checkout", params.resourceId],
     queryFn: () => resourcesApi.adminList({ pageNumber: 1, pageSize: 1 }).then(() =>
       // Using public API would be better; this is a placeholder

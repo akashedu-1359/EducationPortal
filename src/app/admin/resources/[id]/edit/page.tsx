@@ -16,7 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FileUpload } from "@/components/admin/FileUpload";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
-import type { ResourceType, PricingType, UpdateResourceRequest } from "@/types";
+import type { PricingType, UpdateResourceRequest } from "@/types";
 
 const schema = z.object({
   title: z.string().min(3),

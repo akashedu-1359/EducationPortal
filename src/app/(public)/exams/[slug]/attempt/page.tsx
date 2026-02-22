@@ -28,7 +28,6 @@ export default function ExamAttemptPage() {
     selectOption,
     setCurrentQuestion,
     tickTimer,
-    markExpired,
     setSubmitting,
     clearExam,
     getAnswers,

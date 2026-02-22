@@ -2,10 +2,9 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, CheckCircle, XCircle, Clock, Eye } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Eye } from "lucide-react";
 import { examsApi } from "@/lib/exams";
 import { formatDate, formatRelativeTime } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
 import { Select } from "@/components/ui/dropdown";

@@ -6,11 +6,9 @@ import { useRouter } from "next/navigation";
 import {
   Plus,
   Search,
-  Eye,
   Pencil,
   Archive,
   Globe,
-  MoreVertical,
   BookOpen,
 } from "lucide-react";
 import toast from "react-hot-toast";

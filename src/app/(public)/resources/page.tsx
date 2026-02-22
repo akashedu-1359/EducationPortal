@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useSearchParams, useRouter } from "next/navigation";
-import { Search, SlidersHorizontal, BookOpen } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { Search, BookOpen } from "lucide-react";
 import { resourcesApi } from "@/lib/resources";
 import { formatCurrency, formatDuration } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,6 @@ import Image from "next/image";
 import { Clock, Users } from "lucide-react";
 
 export default function ResourcesPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState(searchParams.get("search") || "");

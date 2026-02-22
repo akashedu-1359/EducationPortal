@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { BookOpen, GraduationCap, Play, FileText, ArrowRight, CheckCircle } from "lucide-react";
 import { config } from "@/config";
 import type { HomepageCmsData } from "@/types";

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Search, UserCheck, UserX, Shield } from "lucide-react";
+import { Search, UserCheck, UserX } from "lucide-react";
 import toast from "react-hot-toast";
 import { usersApi } from "@/lib/users";
 import { getApiErrorMessage } from "@/lib/api";

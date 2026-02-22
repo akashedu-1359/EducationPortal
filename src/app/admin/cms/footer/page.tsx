@@ -3,15 +3,15 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
-import { Plus, Pencil, Trash2, ExternalLink, Link as LinkIcon } from "lucide-react";
+import { Plus, Pencil, ExternalLink, Link as LinkIcon } from "lucide-react";
 import toast from "react-hot-toast";
 import { cmsAdminApi } from "@/lib/cms";
 import { getApiErrorMessage } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Modal, ConfirmModal } from "@/components/ui/modal";
+import { Modal } from "@/components/ui/modal";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { FooterConfig, FooterColumn, FooterLink, SocialLink } from "@/types";
+import type { FooterConfig, FooterLink, SocialLink } from "@/types";
 
 const SOCIAL_PLATFORMS: SocialLink["platform"][] = [
   "Twitter", "Facebook", "Instagram", "LinkedIn", "YouTube",
@@ -23,10 +23,10 @@ function LinkFormModal({
   onClose,
 }: {
   link: FooterLink | null;
-  columnId: string;
+  columnId: string; // eslint-disable-line @typescript-eslint/no-unused-vars
   onClose: (saved: boolean) => void;
 }) {
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit } = useForm({
     defaultValues: {
       label: link?.label ?? "",
       url: link?.url ?? "",
@@ -34,7 +34,7 @@ function LinkFormModal({
     },
   });
 
-  function onSubmit(data: { label: string; url: string; isExternal: boolean }) {
+  function onSubmit(_data: { label: string; url: string; isExternal: boolean }) {
     onClose(true);
   }
 

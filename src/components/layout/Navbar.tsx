@@ -11,7 +11,6 @@ import {
   LogOut,
   Menu,
   Settings,
-  User,
   X,
 } from "lucide-react";
 import { cn, getInitials } from "@/lib/utils";
