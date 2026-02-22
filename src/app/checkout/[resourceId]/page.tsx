@@ -11,7 +11,7 @@ import { paymentsApi } from "@/lib/payments";
 import { getApiErrorMessage } from "@/lib/api";
 import { config } from "@/config";
 import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
+import { FullBookLoader } from "@/components/ui/book-loader";
 import { useRequireAuth } from "@/hooks/useAuth";
 
 interface Props {
@@ -123,7 +123,7 @@ export default function CheckoutPage({ params }: Props) {
     createOrderMutation.mutate();
   };
 
-  if (authLoading) return <div className="flex min-h-screen items-center justify-center"><Spinner size="lg" /></div>;
+  if (authLoading) return <FullBookLoader />;
 
   return (
     <div className="min-h-screen bg-slate-50 py-12">

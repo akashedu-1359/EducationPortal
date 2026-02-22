@@ -82,3 +82,29 @@
     animation: shimmer 1.5s infinite;
   }
 }
+
+/* ─── Book Loader Keyframes ─────────────────────────────────────────────────── */
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes bookPageTurn {
+  0%   { transform: perspective(900px) rotateY(0deg);    opacity: 1; }
+  65%  { transform: perspective(900px) rotateY(-180deg); opacity: 1; }
+  66%  { transform: perspective(900px) rotateY(-180deg); opacity: 0; }
+  99%  { transform: perspective(900px) rotateY(-180deg); opacity: 0; }
+  100% { transform: perspective(900px) rotateY(0deg);    opacity: 0; }
+}
+
+@keyframes bookCoverShine {
+  0%, 100% { opacity: 0;   left: -40%; }
+  30%, 70% { opacity: 0; }
+  50%       { opacity: 0.15; left: 110%; }
+}
+
+@keyframes bookTextPulse {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 1;   }
+}

@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { FullBookLoader } from "@/components/ui/book-loader";
 
 interface SpinnerProps {
   size?: "sm" | "md" | "lg" | "xl";
@@ -27,9 +28,5 @@ export function Spinner({ size = "md", className }: SpinnerProps) {
 }
 
 export function FullPageSpinner() {
-  return (
-    <div className="flex min-h-[400px] items-center justify-center">
-      <Spinner size="lg" />
-    </div>
-  );
+  return <FullBookLoader />;
 }

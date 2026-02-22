@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { useAuthStore } from "@/store/authStore";
 import { getApiErrorMessage } from "@/lib/api";
-import { Spinner } from "@/components/ui/spinner";
+import { BookLoader } from "@/components/ui/book-loader";
 
 function GoogleCallbackContent() {
   const searchParams = useSearchParams();
@@ -38,9 +38,8 @@ function GoogleCallbackContent() {
   }, [searchParams, loginWithGoogle, router]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-slate-50">
-      <Spinner size="lg" />
-      <p className="text-sm text-slate-500">Completing Google sign-in…</p>
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+      <BookLoader text="Signing you in…" />
     </div>
   );
 }
