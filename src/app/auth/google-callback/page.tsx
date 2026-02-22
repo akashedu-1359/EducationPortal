@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { useAuthStore } from "@/store/authStore";
 import { getApiErrorMessage } from "@/lib/api";
 import { Spinner } from "@/components/ui/spinner";
 
-export default function GoogleCallbackPage() {
+function GoogleCallbackContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { loginWithGoogle } = useAuthStore();
@@ -42,5 +42,13 @@ export default function GoogleCallbackPage() {
       <Spinner size="lg" />
       <p className="text-sm text-slate-500">Completing Google sign-in…</p>
     </div>
+  );
+}
+
+export default function GoogleCallbackPage() {
+  return (
+    <Suspense>
+      <GoogleCallbackContent />
+    </Suspense>
   );
 }

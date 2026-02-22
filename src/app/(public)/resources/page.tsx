@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { Search, BookOpen } from "lucide-react";
@@ -16,7 +16,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Clock, Users } from "lucide-react";
 
-export default function ResourcesPage() {
+function ResourcesPageContent() {
   const searchParams = useSearchParams();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState(searchParams.get("search") || "");
@@ -192,5 +192,13 @@ export default function ResourcesPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function ResourcesPage() {
+  return (
+    <Suspense>
+      <ResourcesPageContent />
+    </Suspense>
   );
 }
