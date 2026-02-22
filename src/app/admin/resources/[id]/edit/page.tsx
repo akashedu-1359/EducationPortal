@@ -202,8 +202,8 @@ export default function AdminResourceEditPage() {
             )}
             <FileUpload
               accept="image/*"
-              maxSizeMB={5}
-              onUpload={(url) => setThumbnailUrl(url)}
+              maxSizeMb={5}
+              onUploadComplete={(url) => setThumbnailUrl(url)}
               label="Replace thumbnail"
             />
           </div>

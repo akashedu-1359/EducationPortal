@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { Plus, Pencil, ExternalLink, Link as LinkIcon } from "lucide-react";
@@ -26,7 +26,7 @@ function LinkFormModal({
   columnId: string;
   onClose: (saved: boolean) => void;
 }) {
-  const { register, handleSubmit } = useForm({
+  const { register, handleSubmit } = useForm<{ label: string; url: string; isExternal: boolean }>({
     defaultValues: {
       label: link?.label ?? "",
       url: link?.url ?? "",
@@ -68,11 +68,14 @@ export default function AdminCmsFooterPage() {
   const [copyrightEdit, setCopyrightEdit] = useState(false);
   const [copyright, setCopyright] = useState("");
 
-  const { data: footer, isLoading } = useQuery({
+  const { data: footer, isLoading } = useQuery<FooterConfig>({
     queryKey: ["admin", "cms", "footer"],
     queryFn: cmsAdminApi.getFooter,
-    onSuccess: (data) => setCopyright(data.copyrightText),
-  } as any);
+  });
+
+  useEffect(() => {
+    if (footer) setCopyright(footer.copyrightText);
+  }, [footer]);
 
   const updateMutation = useMutation({
     mutationFn: (data: Partial<FooterConfig>) => cmsAdminApi.updateFooter(data),

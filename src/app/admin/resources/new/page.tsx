@@ -158,8 +158,8 @@ export default function AdminResourceNewPage() {
               </h2>
               <FileUpload
                 accept={resourceType === "Video" ? "video/*" : "application/pdf"}
-                maxSizeMB={resourceType === "Video" ? 2048 : 100}
-                onUpload={(url) => setContentUrl(url)}
+                maxSizeMb={resourceType === "Video" ? 2048 : 100}
+                onUploadComplete={(url) => setContentUrl(url)}
                 label={`Upload ${resourceType} file`}
               />
               {contentUrl && (
@@ -183,8 +183,8 @@ export default function AdminResourceNewPage() {
             <h2 className="mb-4 font-semibold text-slate-900">Thumbnail</h2>
             <FileUpload
               accept="image/*"
-              maxSizeMB={5}
-              onUpload={(url) => setThumbnailUrl(url)}
+              maxSizeMb={5}
+              onUploadComplete={(url) => setThumbnailUrl(url)}
               label="Upload thumbnail image"
             />
             {thumbnailUrl && (

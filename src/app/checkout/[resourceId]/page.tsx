@@ -87,7 +87,7 @@ export default function CheckoutPage({ params }: Props) {
         });
       }
 
-      const rzp = new (window as Window & { Razorpay: new (opts: unknown) => { open: () => void } }).Razorpay({
+      const rzp = new (window as unknown as { Razorpay: new (opts: unknown) => { open: () => void } }).Razorpay({
         key: order.keyId || config.razorpayKeyId,
         amount: order.amount * 100, // paise
         currency: order.currency,

@@ -41,27 +41,23 @@ export function PdfViewer({ src, title, isLocked = false, onUnlockClick }: PdfVi
           <span className="font-medium">{title}</span>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            as="a"
-            variant="outline"
-            size="sm"
+          <a
             href={src}
             target="_blank"
             rel="noopener noreferrer"
-            leftIcon={<ExternalLink className="h-3.5 w-3.5" />}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors"
           >
+            <ExternalLink className="h-3.5 w-3.5" />
             Open
-          </Button>
-          <Button
-            as="a"
-            variant="secondary"
-            size="sm"
+          </a>
+          <a
             href={src}
             download={`${title}.pdf`}
-            leftIcon={<Download className="h-3.5 w-3.5" />}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-200 transition-colors"
           >
+            <Download className="h-3.5 w-3.5" />
             Download
-          </Button>
+          </a>
         </div>
       </div>
 
