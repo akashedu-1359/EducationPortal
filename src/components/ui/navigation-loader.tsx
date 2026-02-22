@@ -44,11 +44,21 @@ function NavigationLoaderInner() {
 
   return (
     <div
-      style={{ position: "fixed", inset: 0, zIndex: 9999 }}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 9999,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "rgba(248, 250, 252, 0.88)",
+        backdropFilter: "blur(6px)",
+        WebkitBackdropFilter: "blur(6px)",
+      }}
       aria-live="polite"
       aria-label="Navigating…"
     >
-      <BookLoader />
+      <BookLoader text="Loading…" />
     </div>
   );
 }
