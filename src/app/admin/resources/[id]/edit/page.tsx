@@ -201,6 +201,7 @@ export default function AdminResourceEditPage() {
               <img src={thumbnailUrl} alt="" className="mb-3 h-28 w-full rounded-lg object-cover" />
             )}
             <FileUpload
+              purpose="thumbnail"
               accept="image/*"
               maxSizeMb={5}
               onUploadComplete={(url) => setThumbnailUrl(url)}
