@@ -51,12 +51,6 @@ const FEATURES = [
   },
 ];
 
-const STATS = [
-  { value: "10,000+", label: "Students enrolled" },
-  { value: "500+", label: "Resources available" },
-  { value: "50+", label: "Expert instructors" },
-  { value: "95%", label: "Pass rate" },
-];
 
 const HOW_IT_WORKS = [
   {
@@ -151,20 +145,6 @@ export default async function HomePage() {
           aria-hidden
           className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary-800/30 via-transparent to-transparent"
         />
-      </section>
-
-      {/* Stats */}
-      <section className="border-b border-slate-200 bg-white py-12">
-        <div className="container-pad">
-          <dl className="grid grid-cols-2 gap-6 lg:grid-cols-4">
-            {STATS.map((stat) => (
-              <div key={stat.label} className="text-center">
-                <dt className="text-3xl font-bold text-slate-900">{stat.value}</dt>
-                <dd className="mt-1 text-sm text-slate-500">{stat.label}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
       </section>
 
       {/* Features */}
