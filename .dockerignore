@@ -1,0 +1,31 @@
+.git
+.gitignore
+.github
+.env*
+.env.local
+.env.*.local
+node_modules
+.next
+out
+dist
+
+# Docs & tests (not needed in container)
+docs
+e2e
+playwright-report
+playwright.config.ts
+
+# Editor & OS
+.DS_Store
+.vscode
+*.md
+!README.md
+
+# Docker files (avoid recursion)
+Dockerfile*
+docker-compose*.yml
+nginx/
+
+# Logs
+*.log
+npm-debug.log*

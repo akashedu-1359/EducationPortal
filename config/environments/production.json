@@ -1,0 +1,9 @@
+{
+  "apiUrl": "https://api.eduportal.com",
+  "appUrl": "https://eduportal.com",
+  "appName": "EduPortal",
+  "cookieRefreshName": "eduportal_refresh",
+  "cookieRoleName": "eduportal_role",
+  "logLevel": "warn",
+  "enableDevTools": false
+}
