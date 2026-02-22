@@ -1,6 +1,5 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   // Required for Docker standalone build
   output: "standalone",
 
@@ -14,7 +13,6 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "**.amazonaws.com" },
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
       { protocol: "https", hostname: "eduportal.com" },
-      { protocol: "https", hostname: "qa.eduportal.com" },
     ],
   },
   async headers() {
