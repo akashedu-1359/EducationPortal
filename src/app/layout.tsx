@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Toaster } from "react-hot-toast";
 import { Providers } from "./providers";
+import { NavigationLoader } from "@/components/ui/navigation-loader";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -34,6 +35,7 @@ export default function RootLayout({
           Skip to main content
         </a>
         <Providers>
+          <NavigationLoader />
           <div id="main-content">{children}</div>
         </Providers>
         <Toaster
