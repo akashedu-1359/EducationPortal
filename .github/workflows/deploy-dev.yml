@@ -114,6 +114,7 @@ jobs:
             --network host \
             -e NODE_ENV=production \
             -e PORT=3000 \
+            -e HOSTNAME=0.0.0.0 \
             -e REVALIDATION_SECRET="$REVALIDATION_SECRET" \
             "$IMAGE"
 
