@@ -19,11 +19,11 @@ const SOCIAL_PLATFORMS: SocialLink["platform"][] = [
 
 function LinkFormModal({
   link,
-  columnId,
+  columnId: _columnId,
   onClose,
 }: {
   link: FooterLink | null;
-  columnId: string; // eslint-disable-line @typescript-eslint/no-unused-vars
+  columnId: string;
   onClose: (saved: boolean) => void;
 }) {
   const { register, handleSubmit } = useForm({
