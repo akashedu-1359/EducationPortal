@@ -15,7 +15,7 @@ export function middleware(request: NextRequest) {
   // Read session indicator from cookie set by backend upon login.
   // Cookie names come from config so they match across environments.
   // Actual JWT validation is done server-side; middleware only gates routing.
-  const REFRESH_COOKIE = process.env.NEXT_PUBLIC_REFRESH_COOKIE_NAME || "eduportal_refresh";
+  const REFRESH_COOKIE = process.env.NEXT_PUBLIC_REFRESH_COOKIE_NAME || "refresh_token";
   const ROLE_COOKIE = process.env.NEXT_PUBLIC_ROLE_COOKIE_NAME || "eduportal_role";
   const hasSession = request.cookies.has(REFRESH_COOKIE);
   const userRole = request.cookies.get(ROLE_COOKIE)?.value;
