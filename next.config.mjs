@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Required for Docker standalone build
-  output: "standalone",
+  // output: "standalone" is only for Docker builds — Vercel manages its own output
+  // Dockerfile overrides this via NEXT_OUTPUT build arg if needed
 
   // Make APP_ENV available to config/index.ts at build time
   env: {
