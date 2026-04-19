@@ -6,7 +6,8 @@
       "Bash(echo PATH is: $PATH:*)",
       "Bash(ls \"/c/Program Files \\(x86\\)/\")",
       "Bash(powershell.exe:*)",
-      "Bash(node --version 2>&1 && npm --version 2>&1)"
+      "Bash(node --version 2>&1 && npm --version 2>&1)",
+      "Bash(cd:*)"
     ]
   }
 }
