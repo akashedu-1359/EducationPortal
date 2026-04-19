@@ -15,7 +15,11 @@ export const authApi = {
   },
 
   register: async (data: RegisterRequest): Promise<LoginResponse> => {
-    const res = await api.post("/auth/register", data);
+    const { firstName, lastName, ...rest } = data;
+    const res = await api.post("/auth/register", {
+      ...rest,
+      fullName: `${firstName} ${lastName}`.trim(),
+    });
     return unwrap<LoginResponse>(res);
   },
 
