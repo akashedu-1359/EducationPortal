@@ -12,6 +12,10 @@
     "test": "jest --passWithNoTests",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
+    "test:e2e:smoke": "playwright test e2e/smoke.spec.ts --project=chromium",
+    "test:e2e:prod": "PLAYWRIGHT_BASE_URL=$npm_config_url playwright test --project=chromium",
+    "test:e2e:report": "playwright show-report playwright-report",
+    "test:e2e:api": "playwright test e2e/06-api.spec.ts --project=chromium",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
@@ -55,6 +59,7 @@
     "@typescript-eslint/parser": "^7.16.0",
     "prettier": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.5",
-    "@playwright/test": "^1.45.3"
+    "@playwright/test": "^1.45.3",
+    "dotenv": "^16.4.5"
   }
 }

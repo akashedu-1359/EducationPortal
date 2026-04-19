@@ -1,0 +1,96 @@
+name: E2E Tests
+
+on:
+  # Run automatically after every production deploy
+  workflow_run:
+    workflows: ["Deploy — Production"]
+    types: [completed]
+
+  # Run manually from GitHub Actions tab
+  workflow_dispatch:
+    inputs:
+      test_suite:
+        description: "Which tests to run"
+        required: false
+        default: "all"
+        type: choice
+        options:
+          - all
+          - smoke
+          - api
+          - auth
+          - admin
+
+jobs:
+  test:
+    name: Playwright E2E
+    runs-on: ubuntu-latest
+    # Only run if deploy succeeded (or manual trigger)
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Run tests
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ vars.APP_URL }}
+          PLAYWRIGHT_API_URL: ${{ vars.API_URL }}
+          E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
+          E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+          E2E_USER_EMAIL: ${{ secrets.E2E_USER_EMAIL }}
+          E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
+        run: |
+          SUITE="${{ github.event.inputs.test_suite || 'all' }}"
+          if [ "$SUITE" = "smoke" ]; then
+            npx playwright test e2e/smoke.spec.ts --project=chromium
+          elif [ "$SUITE" = "api" ]; then
+            npx playwright test e2e/06-api.spec.ts --project=chromium
+          elif [ "$SUITE" = "auth" ]; then
+            npx playwright test e2e/03-auth.spec.ts --project=chromium
+          elif [ "$SUITE" = "admin" ]; then
+            npx playwright test e2e/05-admin.spec.ts --project=chromium
+          else
+            npx playwright test --project=chromium
+          fi
+
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-${{ github.run_number }}
+          path: playwright-report/
+          retention-days: 30
+
+      - name: Upload test results (JSON)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ github.run_number }}
+          path: playwright-report/results.json
+          retention-days: 30
+
+      - name: Post summary
+        if: always()
+        run: |
+          echo "## E2E Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| | |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| Target | ${{ vars.APP_URL }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Suite  | ${{ github.event.inputs.test_suite || 'all' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Status | ${{ job.status }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Download the **playwright-report** artifact to view the full HTML report." >> $GITHUB_STEP_SUMMARY
