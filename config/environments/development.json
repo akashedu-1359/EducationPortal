@@ -1,0 +1,9 @@
+{
+  "apiUrl": "http://localhost:5000",
+  "appUrl": "http://localhost:3000",
+  "appName": "EduPortal",
+  "cookieRefreshName": "eduportal_refresh",
+  "cookieRoleName": "eduportal_role",
+  "logLevel": "debug",
+  "enableDevTools": true
+}

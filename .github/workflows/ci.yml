@@ -1,0 +1,45 @@
+name: CI — Pull Request Gate
+
+# Runs on every PR targeting main — must pass before merge is allowed
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  ci:
+    name: Lint · Type Check · Tests · Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: Unit tests
+        run: npm run test -- --passWithNoTests
+
+      # Full build validation with placeholder secrets
+      # (real secrets are injected only in the deploy jobs)
+      - name: Build check
+        env:
+          APP_ENV: production
+          NEXT_PUBLIC_API_URL: https://api.eduportal.com
+          NEXT_PUBLIC_APP_URL: https://eduportal.com
+          NEXT_PUBLIC_APP_NAME: EduPortal
+          NEXT_PUBLIC_GOOGLE_CLIENT_ID: placeholder
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: placeholder
+          NEXT_PUBLIC_RAZORPAY_KEY_ID: placeholder
+          REVALIDATION_SECRET: placeholder
+        run: npm run build
