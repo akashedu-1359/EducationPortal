@@ -8,11 +8,12 @@ const nextConfig = {
   },
 
   // Proxy all /api/* requests through Vercel so httpOnly cookies work cross-domain
+  // BACKEND_URL is server-side only (no NEXT_PUBLIC_ prefix) — points to Render
   async rewrites() {
     return [
       {
         source: "/api/:path*",
-        destination: `${process.env.NEXT_PUBLIC_API_URL}/api/:path*`,
+        destination: `${process.env.BACKEND_URL}/api/:path*`,
       },
     ];
   },
