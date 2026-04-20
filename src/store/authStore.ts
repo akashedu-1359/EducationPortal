@@ -32,7 +32,7 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       user: null,
       isAuthenticated: false,
-      isLoading: true, // stays true until sessionStorage hydration completes
+      isLoading: false,
 
       login: async (email, password) => {
         set({ isLoading: true });
@@ -118,10 +118,6 @@ export const useAuthStore = create<AuthState>()(
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
-      onRehydrateStorage: () => (state) => {
-        // Called after sessionStorage is read — safe to unblock route guards
-        if (state) state.isLoading = false;
-      },
     }
   )
 );

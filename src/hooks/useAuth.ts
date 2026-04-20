@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore, isAdmin } from "@/store/authStore";
 import type { UserRole } from "@/types";
@@ -18,22 +18,33 @@ export function useAuth() {
 export function useRequireAuth(redirectTo = "/auth/login") {
   const { isAuthenticated, isLoading } = useAuthStore();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && !isLoading && !isAuthenticated) {
       router.push(redirectTo);
     }
-  }, [isAuthenticated, isLoading, router, redirectTo]);
+  }, [mounted, isAuthenticated, isLoading, router, redirectTo]);
 
-  return { isAuthenticated, isLoading };
+  return { isAuthenticated, isLoading: !mounted || isLoading };
 }
 
 /** Redirects non-admin users to dashboard. Use at top of admin pages. */
 export function useRequireAdmin() {
   const { user, isAuthenticated, isLoading } = useAuthStore();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
     if (!isLoading) {
       if (!isAuthenticated) {
         router.push("/auth/login");
@@ -41,9 +52,9 @@ export function useRequireAdmin() {
         router.push("/dashboard");
       }
     }
-  }, [user, isAuthenticated, isLoading, router]);
+  }, [mounted, user, isAuthenticated, isLoading, router]);
 
-  return { user, isAdmin: isAdmin(user), isLoading };
+  return { user, isAdmin: isAdmin(user), isLoading: !mounted || isLoading };
 }
 
 /** Checks if user has one of the given roles. */
@@ -53,15 +64,14 @@ export function useHasRole(...roles: UserRole[]): boolean {
   return roles.includes(user.role);
 }
 
-/** Hydrates auth state from httpOnly refresh cookie on app start. */
+/** Hydrates auth state from refresh cookie on app start. Runs once. */
 export function useHydrateAuth() {
-  const { hydrate, isAuthenticated, isLoading } = useAuthStore();
+  const { hydrate, isAuthenticated } = useAuthStore();
 
   useEffect(() => {
-    // Wait for sessionStorage rehydration (isLoading goes false via onRehydrateStorage).
-    // Only call hydrate() if still not authenticated after rehydration.
-    if (!isLoading && !isAuthenticated) {
+    if (!isAuthenticated) {
       hydrate();
     }
-  }, [isLoading, isAuthenticated, hydrate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 }
