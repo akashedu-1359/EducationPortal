@@ -3,7 +3,7 @@
 import { useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
-import { useAuthStore } from "@/store/authStore";
+import { useAuthStore, isAdmin } from "@/store/authStore";
 import { getApiErrorMessage } from "@/lib/api";
 import { BookLoader } from "@/components/ui/book-loader";
 
@@ -29,7 +29,8 @@ function GoogleCallbackContent() {
     loginWithGoogle(code)
       .then(() => {
         toast.success("Signed in with Google!");
-        router.push("/dashboard");
+        const { user } = useAuthStore.getState();
+        router.push(isAdmin(user) ? "/admin" : "/dashboard");
       })
       .catch((err) => {
         toast.error(getApiErrorMessage(err));

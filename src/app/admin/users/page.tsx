@@ -19,8 +19,8 @@ import {
 } from "@/components/ui/table";
 import type { User, UserRole } from "@/types";
 
-const ROLE_BADGE: Record<UserRole, "primary" | "success" | "info" | "warning" | "default"> = {
-  SuperAdmin: "danger" as never,
+const ROLE_BADGE: Record<UserRole, "primary" | "success" | "info" | "warning" | "default" | "danger"> = {
+  SuperAdmin: "danger",
   Admin: "primary",
   ContentManager: "info",
   ExamManager: "warning",

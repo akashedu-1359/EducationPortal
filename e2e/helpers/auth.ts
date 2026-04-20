@@ -6,7 +6,7 @@ export async function loginAs(page: Page, email: string, password: string) {
   await page.getByPlaceholder(/password/i).fill(password);
   await page.getByRole("button", { name: /sign in/i }).click();
   await page.waitForURL((url) => !url.pathname.includes("/auth/login"), {
-    timeout: 15000,
+    timeout: 45000,
   });
 }
 

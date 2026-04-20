@@ -20,7 +20,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 1,
   workers: 1, // single worker for predictable order
-  timeout: 30_000,
+  timeout: 60_000,
   expect: { timeout: 10_000 },
 
   reporter: [

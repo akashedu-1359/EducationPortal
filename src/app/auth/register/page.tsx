@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
 import toast from "react-hot-toast";
-import { useAuthStore } from "@/store/authStore";
+import { useAuthStore, isAdmin } from "@/store/authStore";
 import { getApiErrorMessage } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,7 +58,8 @@ export default function RegisterPage() {
     try {
       await registerUser(data);
       toast.success("Account created! Welcome to EduPortal.");
-      router.push("/dashboard");
+      const { user } = useAuthStore.getState();
+      router.push(isAdmin(user) ? "/admin" : "/dashboard");
     } catch (error) {
       toast.error(getApiErrorMessage(error));
     }

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 const BACKEND = process.env.BACKEND_URL!;
 const COOKIE_MAX_AGE = 30 * 24 * 60 * 60; // 30 days
 
