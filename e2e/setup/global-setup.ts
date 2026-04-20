@@ -1,4 +1,4 @@
-import { test as setup, expect, request } from "@playwright/test";
+import { test as setup, request } from "@playwright/test";
 import { uniqueEmail } from "../helpers/auth";
 
 const API = process.env.PLAYWRIGHT_API_URL || "http://localhost:5000";
@@ -30,24 +30,20 @@ setup("warm up services", async () => {
 });
 
 /**
- * Runs once before all tests.
- * Creates the E2E test user account if E2E_USER_EMAIL is not already set.
+ * Verifies or registers the test user via API (no browser needed — fast and reliable).
  */
-setup("create test user account", async ({ page }) => {
+setup("create test user account", async () => {
   setup.setTimeout(60000);
-  // If credentials already provided, verify they work
-  if (process.env.E2E_USER_EMAIL && process.env.E2E_USER_PASSWORD) {
-    await page.goto("/auth/login");
-    await page.getByPlaceholder(/email/i).fill(process.env.E2E_USER_EMAIL);
-    await page.getByPlaceholder(/password/i).fill(process.env.E2E_USER_PASSWORD);
-    await page.getByRole("button", { name: /sign in/i }).click();
-    const url = await page.waitForURL(
-      (u) => !u.pathname.includes("/auth/login"),
-      { timeout: PAGE_TIMEOUT }
-    ).then(() => page.url()).catch(() => null);
+  const apiCtx = await request.newContext({ baseURL: API });
 
-    if (url) {
+  if (process.env.E2E_USER_EMAIL && process.env.E2E_USER_PASSWORD) {
+    // Verify existing credentials work
+    const res = await apiCtx.post("/api/auth/login", {
+      data: { email: process.env.E2E_USER_EMAIL, password: process.env.E2E_USER_PASSWORD },
+    });
+    if (res.ok()) {
       console.log(`✓ Test user verified: ${process.env.E2E_USER_EMAIL}`);
+      await apiCtx.dispose();
       return;
     }
     console.warn("⚠ E2E_USER_EMAIL login failed — will register a new account");
@@ -56,42 +52,43 @@ setup("create test user account", async ({ page }) => {
   // Register a fresh test user
   const email = uniqueEmail("e2e-user");
   const password = "TestUser@123!";
-  const firstName = "E2E";
-  const lastName = "Tester";
 
-  await page.goto("/auth/register");
-  await page.getByPlaceholder(/first name/i).fill(firstName);
-  await page.getByPlaceholder(/last name/i).fill(lastName);
-  await page.getByPlaceholder(/email/i).fill(email);
-
-  const passwordFields = await page.getByPlaceholder(/password/i).all();
-  await passwordFields[0].fill(password);
-  if (passwordFields[1]) await passwordFields[1].fill(password);
-
-  await page.getByRole("button", { name: /register|create/i }).click();
-  await page.waitForURL((u) => !u.pathname.includes("/auth/register"), {
-    timeout: PAGE_TIMEOUT,
+  const res = await apiCtx.post("/api/auth/register", {
+    data: { fullName: "E2E Tester", email, password, confirmPassword: password },
   });
 
-  // Store for test run (written to env so other tests can read)
+  if (!res.ok()) {
+    const body = await res.text();
+    throw new Error(`Failed to register test user: ${res.status()} ${body}`);
+  }
+
   process.env.E2E_USER_EMAIL = email;
   process.env.E2E_USER_PASSWORD = password;
   console.log(`✓ Created test user: ${email}`);
+  await apiCtx.dispose();
 });
 
-setup("verify admin account", async ({ page }) => {
+/**
+ * Verifies the admin account exists and credentials are valid via API.
+ */
+setup("verify admin account", async () => {
   setup.setTimeout(60000);
   if (!process.env.E2E_ADMIN_EMAIL || !process.env.E2E_ADMIN_PASSWORD) {
     console.warn("⚠ E2E_ADMIN_EMAIL not set — admin tests will be skipped");
     return;
   }
 
-  await page.goto("/auth/login");
-  await page.getByPlaceholder(/email/i).fill(process.env.E2E_ADMIN_EMAIL!);
-  await page.getByPlaceholder(/password/i).fill(process.env.E2E_ADMIN_PASSWORD!);
-  await page.getByRole("button", { name: /sign in/i }).click();
-  await page.waitForURL((u) => !u.pathname.includes("/auth/login"), {
-    timeout: PAGE_TIMEOUT,
+  const apiCtx = await request.newContext({ baseURL: API });
+  const res = await apiCtx.post("/api/auth/login", {
+    data: {
+      email: process.env.E2E_ADMIN_EMAIL,
+      password: process.env.E2E_ADMIN_PASSWORD,
+    },
   });
+  await apiCtx.dispose();
+
+  if (!res.ok()) {
+    throw new Error(`Admin login failed: ${res.status()} — check E2E_ADMIN_EMAIL / E2E_ADMIN_PASSWORD secrets`);
+  }
   console.log(`✓ Admin account verified: ${process.env.E2E_ADMIN_EMAIL}`);
 });
