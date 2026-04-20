@@ -3,14 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 const BACKEND = process.env.BACKEND_URL!;
 const COOKIE_MAX_AGE = 30 * 24 * 60 * 60;
 
-function extractCookieValue(setCookieHeaders: string[], name: string): string | null {
-  for (const header of setCookieHeaders) {
-    const match = header.match(new RegExp(`(?:^|,\\s*)${name}=([^;]+)`));
-    if (match) return match[1];
-  }
-  return null;
-}
-
 export async function POST(request: NextRequest) {
   const refreshToken = request.cookies.get("refresh_token")?.value;
 
@@ -25,26 +17,27 @@ export async function POST(request: NextRequest) {
       Cookie: `refresh_token=${refreshToken}`,
     },
     body: JSON.stringify({}),
+    cache: "no-store",
   });
 
   const data = await res.json();
+
+  // Strip refresh token from body before forwarding to browser
+  const newRefreshToken: string | undefined = data.data?.refreshToken;
+  if (data.data) delete data.data.refreshToken;
+
   const response = NextResponse.json(data, { status: res.status });
 
-  if (res.ok && data.success) {
-    const setCookies = res.headers.getSetCookie?.() ?? [];
-    const newRefreshToken = extractCookieValue(setCookies, "refresh_token");
+  if (res.ok && data.success && newRefreshToken) {
+    response.cookies.set("refresh_token", newRefreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      maxAge: COOKIE_MAX_AGE,
+      path: "/",
+    });
 
-    if (newRefreshToken) {
-      response.cookies.set("refresh_token", newRefreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "strict",
-        maxAge: COOKIE_MAX_AGE,
-        path: "/",
-      });
-    }
-
-    const role = data.data?.user?.role;
+    const role: string | undefined = data.data?.user?.role;
     if (role) {
       response.cookies.set("eduportal_role", role, {
         httpOnly: false,
