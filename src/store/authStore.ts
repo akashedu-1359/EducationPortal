@@ -85,17 +85,16 @@ export const useAuthStore = create<AuthState>()(
         if (get().isAuthenticated) return; // already hydrated
         set({ isLoading: true });
         try {
-          // Try to get a new access token using the refresh cookie
           const { default: axios } = await import("axios");
           const refreshRes = await axios.post(
             `${config.apiUrl}/api/auth/refresh`,
             {},
             { withCredentials: true }
           );
-          if (refreshRes.data?.data?.accessToken) {
-            setAccessToken(refreshRes.data.data.accessToken);
-            const user = await authApi.getMe();
-            set({ user, isAuthenticated: true, isLoading: false });
+          const data = refreshRes.data?.data;
+          if (data?.accessToken && data?.user) {
+            setAccessToken(data.accessToken);
+            set({ user: data.user, isAuthenticated: true, isLoading: false });
           } else {
             set({ isLoading: false });
           }
