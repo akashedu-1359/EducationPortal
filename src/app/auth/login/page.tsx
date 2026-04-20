@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import toast from "react-hot-toast";
-import { useAuthStore } from "@/store/authStore";
+import { useAuthStore, isAdmin } from "@/store/authStore";
 import { getApiErrorMessage } from "@/lib/api";
 import { config } from "@/config";
 import { Button } from "@/components/ui/button";
@@ -40,7 +40,9 @@ function LoginPageContent() {
     try {
       await login(data.email, data.password);
       toast.success("Welcome back!");
-      router.push(nextUrl);
+      const { user } = useAuthStore.getState();
+      const redirectTo = isAdmin(user) ? "/admin" : nextUrl;
+      router.push(redirectTo);
     } catch (error) {
       toast.error(getApiErrorMessage(error));
     }
