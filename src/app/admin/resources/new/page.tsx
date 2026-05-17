@@ -33,7 +33,9 @@ type FormData = z.infer<typeof schema>;
 export default function AdminResourceNewPage() {
   const router = useRouter();
   const [thumbnailUrl, setThumbnailUrl] = useState("");
+  const [thumbnailKey, setThumbnailKey] = useState("");
   const [contentUrl, setContentUrl] = useState("");
+  const [contentKey, setContentKey] = useState("");
   const [blogContent, setBlogContent] = useState("");
 
   const { data: categories } = useQuery({
@@ -71,6 +73,9 @@ export default function AdminResourceNewPage() {
     const payload: CreateResourceRequest = {
       ...data,
       tags: data.tags ? data.tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
+      fileKey: contentKey || undefined,
+      thumbnailKey: thumbnailKey || undefined,
+      blogContent: data.type === "Blog" ? blogContent : undefined,
     };
     mutation.mutate(payload);
   }
@@ -160,7 +165,7 @@ export default function AdminResourceNewPage() {
                 purpose={resourceType === "Video" ? "resource-video" : "resource-pdf"}
                 accept={resourceType === "Video" ? "video/*" : "application/pdf"}
                 maxSizeMb={resourceType === "Video" ? 2048 : 100}
-                onUploadComplete={(url) => setContentUrl(url)}
+                onUploadComplete={(url, key) => { setContentUrl(url); setContentKey(key); }}
                 label={`Upload ${resourceType} file`}
               />
               {contentUrl && (
@@ -186,7 +191,7 @@ export default function AdminResourceNewPage() {
               purpose="thumbnail"
               accept="image/*"
               maxSizeMb={5}
-              onUploadComplete={(url) => setThumbnailUrl(url)}
+              onUploadComplete={(url, key) => { setThumbnailUrl(url); setThumbnailKey(key); }}
               label="Upload thumbnail image"
             />
             {thumbnailUrl && (

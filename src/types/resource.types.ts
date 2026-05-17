@@ -65,6 +65,9 @@ export interface CreateResourceRequest {
   currency?: string;
   tags?: string[];
   durationMinutes?: number;
+  fileKey?: string;
+  thumbnailKey?: string;
+  blogContent?: string;
 }
 
 export interface UpdateResourceRequest extends Partial<CreateResourceRequest> {

@@ -14,7 +14,7 @@ interface FileUploadProps {
   maxSizeMb?: number;
   label?: string;
   currentUrl?: string;
-  onUploadComplete: (url: string) => void;
+  onUploadComplete: (url: string, key: string) => void;
   onError?: (message: string) => void;
 }
 
@@ -57,11 +57,11 @@ export function FileUpload({
 
     setState({ status: "uploading", progress: 0 });
     try {
-      const url = await storageApi.upload(file, purpose, (pct) => {
+      const { publicUrl, key } = await storageApi.upload(file, purpose, (pct) => {
         setState({ status: "uploading", progress: pct });
       });
-      setState({ status: "success", url });
-      onUploadComplete(url);
+      setState({ status: "success", url: publicUrl });
+      onUploadComplete(publicUrl, key);
     } catch (err) {
       const msg = getApiErrorMessage(err);
       setState({ status: "error", message: msg });

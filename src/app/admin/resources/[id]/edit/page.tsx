@@ -36,15 +36,13 @@ export default function AdminResourceEditPage() {
   const router = useRouter();
   const qc = useQueryClient();
   const [thumbnailUrl, setThumbnailUrl] = useState("");
+  const [thumbnailKey, setThumbnailKey] = useState("");
+  const [contentKey, setContentKey] = useState("");
   const [blogContent, setBlogContent] = useState("");
 
   const { data: resource, isLoading } = useQuery({
     queryKey: ["admin", "resource", id],
-    queryFn: () => resourcesApi.adminList({ pageNumber: 1, pageSize: 1 }).then((r) => {
-      const found = r.items.find((x) => x.id === id);
-      if (!found) throw new Error("Not found");
-      return found;
-    }),
+    queryFn: () => resourcesApi.adminGet(id),
     enabled: !!id,
   });
 
@@ -84,7 +82,28 @@ export default function AdminResourceEditPage() {
     mutationFn: (data: UpdateResourceRequest) => resourcesApi.update(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin", "resources"] });
+      qc.invalidateQueries({ queryKey: ["admin", "resource", id] });
       toast.success("Resource updated");
+    },
+    onError: (err) => toast.error(getApiErrorMessage(err)),
+  });
+
+  const publishMutation = useMutation({
+    mutationFn: () => resourcesApi.publish(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin", "resources"] });
+      qc.invalidateQueries({ queryKey: ["admin", "resource", id] });
+      toast.success("Resource published");
+    },
+    onError: (err) => toast.error(getApiErrorMessage(err)),
+  });
+
+  const archiveMutation = useMutation({
+    mutationFn: () => resourcesApi.archive(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin", "resources"] });
+      qc.invalidateQueries({ queryKey: ["admin", "resource", id] });
+      toast.success("Resource archived");
     },
     onError: (err) => toast.error(getApiErrorMessage(err)),
   });
@@ -96,7 +115,10 @@ export default function AdminResourceEditPage() {
     const payload: UpdateResourceRequest = {
       ...data,
       tags: data.tags ? data.tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
+      thumbnailKey: thumbnailKey || undefined,
       thumbnailUrl: thumbnailUrl || undefined,
+      fileKey: contentKey || undefined,
+      blogContent: data.type === "Blog" ? blogContent : undefined,
     };
     mutation.mutate(payload);
   }
@@ -185,7 +207,18 @@ export default function AdminResourceEditPage() {
             </div>
           </div>
 
-          {resourceType === "Blog" && (
+          {resourceType !== "Blog" ? (
+            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-card">
+              <h2 className="mb-4 font-semibold text-slate-900">{resourceType} File</h2>
+              <FileUpload
+                purpose={resourceType === "Video" ? "resource-video" : "resource-pdf"}
+                accept={resourceType === "Video" ? "video/*" : "application/pdf"}
+                maxSizeMb={resourceType === "Video" ? 2048 : 100}
+                onUploadComplete={(_, key) => setContentKey(key)}
+                label={`Replace ${resourceType} file`}
+              />
+            </div>
+          ) : (
             <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-card">
               <h2 className="mb-4 font-semibold text-slate-900">Blog Content</h2>
               <RichTextEditor value={blogContent} onChange={setBlogContent} />
@@ -204,7 +237,7 @@ export default function AdminResourceEditPage() {
               purpose="thumbnail"
               accept="image/*"
               maxSizeMb={5}
-              onUploadComplete={(url) => setThumbnailUrl(url)}
+              onUploadComplete={(url, key) => { setThumbnailUrl(url); setThumbnailKey(key); }}
               label="Replace thumbnail"
             />
           </div>
@@ -232,6 +265,44 @@ export default function AdminResourceEditPage() {
               </div>
             )}
           </div>
+
+          {resource && (
+            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-card space-y-3">
+              <h2 className="font-semibold text-slate-900">Status</h2>
+              <div className="flex items-center gap-2">
+                <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                  resource.status === "Published"
+                    ? "bg-green-100 text-green-800"
+                    : resource.status === "Archived"
+                    ? "bg-slate-100 text-slate-600"
+                    : "bg-yellow-100 text-yellow-800"
+                }`}>
+                  {resource.status}
+                </span>
+              </div>
+              {resource.status !== "Published" && (
+                <Button
+                  type="button"
+                  className="w-full bg-green-600 hover:bg-green-700"
+                  isLoading={publishMutation.isPending}
+                  onClick={() => publishMutation.mutate()}
+                >
+                  Publish
+                </Button>
+              )}
+              {resource.status === "Published" && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full text-slate-600"
+                  isLoading={archiveMutation.isPending}
+                  onClick={() => archiveMutation.mutate()}
+                >
+                  Archive
+                </Button>
+              )}
+            </div>
+          )}
 
           <div className="flex flex-col gap-2">
             <Button type="submit" className="w-full" isLoading={isSubmitting || mutation.isPending}>

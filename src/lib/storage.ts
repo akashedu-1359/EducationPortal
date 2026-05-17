@@ -44,19 +44,19 @@ export const storageApi = {
   },
 
   /**
-   * Full upload pipeline: get pre-signed URL → upload → return public URL.
+   * Full upload pipeline: get pre-signed URL → upload → return public URL and storage key.
    */
   upload: async (
     file: File,
     purpose: UploadPurpose,
     onProgress?: (pct: number) => void
-  ): Promise<string> => {
-    const { uploadUrl, publicUrl } = await storageApi.getUploadUrl(
+  ): Promise<{ publicUrl: string; key: string }> => {
+    const { uploadUrl, publicUrl, key } = await storageApi.getUploadUrl(
       file.name,
       file.type,
       purpose
     );
     await storageApi.uploadToS3(uploadUrl, file, onProgress);
-    return publicUrl;
+    return { publicUrl, key };
   },
 };

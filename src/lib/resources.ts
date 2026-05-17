@@ -52,6 +52,11 @@ export const resourcesApi = {
     return unwrap(res);
   },
 
+  adminGet: async (id: string): Promise<Resource> => {
+    const res = await api.get(`/admin/resources/${id}`);
+    return unwrap(res);
+  },
+
   create: async (data: CreateResourceRequest): Promise<Resource> => {
     const res = await api.post("/admin/resources", data);
     return unwrap(res);
