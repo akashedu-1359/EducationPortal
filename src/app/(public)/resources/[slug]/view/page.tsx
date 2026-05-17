@@ -9,9 +9,8 @@ interface Props {
 }
 
 async function getResourceAccess(slug: string): Promise<ResourceDetail | null> {
-  // This SSR fetch runs with the user's session cookie to get the signed URL
   try {
-    const res = await fetch(`${config.apiUrl}/api/resources/${slug}/access`, {
+    const res = await fetch(`${config.apiUrl}/api/resources/${slug}`, {
       cache: "no-store", // always fresh — contains pre-signed S3 URL
     });
     if (!res.ok) return null;
