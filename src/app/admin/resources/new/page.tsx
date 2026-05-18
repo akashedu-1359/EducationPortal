@@ -62,7 +62,7 @@ export default function AdminResourceNewPage() {
 
   const mutation = useMutation({
     mutationFn: (data: CreateResourceRequest) => resourcesApi.create(data),
-    onSuccess: (resource) => {
+    onSuccess: (_resource) => {
       toast.success("Resource created");
       router.push("/admin/resources");
     },
