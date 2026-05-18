@@ -52,7 +52,7 @@ export default function AdminCategoriesPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: CategoryFormData }) =>
+    mutationFn: ({ id, data }: { id: string; data: CategoryFormData & { isVisible?: boolean; sortOrder?: number } }) =>
       resourcesApi.updateCategory(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin", "categories"] });
