@@ -9,7 +9,7 @@ import type { HomepageCmsData } from "@/types";
 async function getHomepageData(): Promise<HomepageCmsData | null> {
   try {
     const res = await fetch(`${config.apiUrl}/api/cms/homepage`, {
-      next: { tags: ["cms-homepage"], revalidate: 3600 }, // ISR — revalidate every 1h
+      next: { tags: ["cms-homepage"], revalidate: 60 },
     });
     if (!res.ok) return null;
     const json = await res.json();
