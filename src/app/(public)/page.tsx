@@ -81,9 +81,22 @@ const HOW_IT_WORKS = [
 export default async function HomePage() {
   const cms = await getHomepageData();
   const heroBanner = cms?.banners?.find((b) => b.type === "Hero");
+  const announcementBanners = cms?.banners?.filter((b) => b.type === "Announcement" && b.isActive) ?? [];
 
   return (
     <>
+      {/* Announcement Banners */}
+      {announcementBanners.map((banner) => (
+        <div key={banner.id} className="bg-primary-600 py-2.5 text-center text-sm font-medium text-white">
+          {banner.title}
+          {banner.ctaText && banner.ctaUrl && (
+            <Link href={banner.ctaUrl} className="ml-2 underline underline-offset-2">
+              {banner.ctaText} →
+            </Link>
+          )}
+        </div>
+      ))}
+
       {/* Promo Banner */}
       {cms?.promoBanner?.isActive && (
         <div
