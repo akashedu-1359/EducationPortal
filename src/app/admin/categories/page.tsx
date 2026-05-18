@@ -92,7 +92,10 @@ export default function AdminCategoriesPage() {
 
   const onSubmit = (data: CategoryFormData) => {
     if (editing) {
-      updateMutation.mutate({ id: editing.id, data });
+      updateMutation.mutate({
+        id: editing.id,
+        data: { ...data, isVisible: editing.isVisible, sortOrder: editing.sortOrder },
+      });
     } else {
       createMutation.mutate(data);
     }

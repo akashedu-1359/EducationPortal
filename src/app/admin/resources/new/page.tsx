@@ -64,7 +64,7 @@ export default function AdminResourceNewPage() {
     mutationFn: (data: CreateResourceRequest) => resourcesApi.create(data),
     onSuccess: (resource) => {
       toast.success("Resource created");
-      router.push(`/admin/resources/${resource.id}/edit`);
+      router.push("/admin/resources");
     },
     onError: (err) => toast.error(getApiErrorMessage(err)),
   });

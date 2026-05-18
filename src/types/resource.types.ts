@@ -9,7 +9,8 @@ export interface Category {
   description?: string;
   iconUrl?: string;
   resourceCount: number;
-  isActive: boolean;
+  isVisible: boolean;
+  sortOrder: number;
   createdAt: string;
 }
 

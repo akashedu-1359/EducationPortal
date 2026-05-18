@@ -72,22 +72,24 @@ export function Navbar() {
         </Link>
 
         {/* Desktop Nav */}
-        <div className="hidden items-center gap-1 md:flex">
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={cn(
-                "rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                pathname === link.href
-                  ? "bg-primary-50 text-primary-700"
-                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-              )}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </div>
+        {isAuthenticated && (
+          <div className="hidden items-center gap-1 md:flex">
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  "rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                  pathname === link.href
+                    ? "bg-primary-50 text-primary-700"
+                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                )}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        )}
 
         {/* Right Side */}
         <div className="flex items-center gap-3">
@@ -135,23 +137,25 @@ export function Navbar() {
       {/* Mobile Menu */}
       {mobileOpen && (
         <div className="border-t border-slate-200 bg-white px-4 py-4 md:hidden">
-          <div className="space-y-1">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                className={cn(
-                  "block rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                  pathname === link.href
-                    ? "bg-primary-50 text-primary-700"
-                    : "text-slate-600 hover:bg-slate-50"
-                )}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </div>
+          {isAuthenticated && (
+            <div className="space-y-1">
+              {NAV_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={cn(
+                    "block rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                    pathname === link.href
+                      ? "bg-primary-50 text-primary-700"
+                      : "text-slate-600 hover:bg-slate-50"
+                  )}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          )}
           {!isAuthenticated && (
             <div className="mt-4 flex flex-col gap-2 border-t border-slate-100 pt-4">
               <Link href="/auth/login" onClick={() => setMobileOpen(false)}>

@@ -97,7 +97,7 @@ export const resourcesApi = {
 
   updateCategory: async (
     id: string,
-    data: { name?: string; description?: string; isActive?: boolean }
+    data: { name?: string; description?: string; isVisible?: boolean; sortOrder?: number }
   ): Promise<Category> => {
     const res = await api.put(`/admin/categories/${id}`, data);
     return unwrap(res);
