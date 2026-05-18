@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { GraduationCap, Twitter, Linkedin, Youtube, Facebook, Instagram } from "lucide-react";
+import { useAuthStore } from "@/store/authStore";
 
 const FOOTER_LINKS = {
   Learn: [
@@ -37,6 +40,11 @@ const SOCIAL_LINKS = [
 ];
 
 export function Footer() {
+  const { isAuthenticated } = useAuthStore();
+  const visibleLinks = Object.entries(FOOTER_LINKS).filter(
+    ([title]) => title !== "Learn" || isAuthenticated
+  );
+
   return (
     <footer className="border-t border-slate-200 bg-slate-900 text-slate-300">
       <div className="container-pad py-12 lg:py-16">
@@ -70,7 +78,7 @@ export function Footer() {
           </div>
 
           {/* Link columns */}
-          {Object.entries(FOOTER_LINKS).map(([title, links]) => (
+          {visibleLinks.map(([title, links]) => (
             <div key={title}>
               <h3 className="mb-3 text-sm font-semibold text-white">{title}</h3>
               <ul className="space-y-2">
