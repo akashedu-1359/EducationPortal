@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BookOpen, GraduationCap, Play, FileText, ArrowRight, CheckCircle } from "lucide-react";
 import { config } from "@/config";
+import { BrowseResourcesButton } from "@/components/layout/BrowseResourcesButton";
 import type { HomepageCmsData } from "@/types";
 
 // ── Data fetching (server-side, ISR-cached) ──────────────────────────────────
@@ -123,13 +124,7 @@ export default async function HomePage() {
             </p>
 
             <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-              <Link
-                href="/resources"
-                className="inline-flex items-center gap-2 rounded-xl bg-primary-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-primary-500"
-              >
-                Browse Resources
-                <ArrowRight className="h-4 w-4" />
-              </Link>
+              <BrowseResourcesButton variant="primary" />
               <Link
                 href="/auth/register"
                 className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-6 py-3 text-sm font-semibold text-white backdrop-blur transition-colors hover:bg-white/20"
@@ -226,12 +221,7 @@ export default async function HomePage() {
               Create Free Account
               <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link
-              href="/resources"
-              className="inline-flex items-center gap-2 rounded-xl border border-white/30 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10"
-            >
-              Browse Resources
-            </Link>
+            <BrowseResourcesButton variant="outline" />
           </div>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-primary-200">
