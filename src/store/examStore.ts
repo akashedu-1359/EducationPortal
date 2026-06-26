@@ -1,25 +1,22 @@
 import { create } from "zustand";
-import type { ExamDelivery, AnswerSubmission } from "@/types";
+import type { StartAttemptResponse, AnswerSubmission } from "@/types";
 
 interface ExamState {
-  // Active attempt
-  delivery: ExamDelivery | null;
-  answers: Record<string, string[]>; // questionId → selectedOptionIds
+  delivery: StartAttemptResponse | null;
+  answers: Record<string, number | null>; // questionId → selectedOptionIndex
   currentQuestionIndex: number;
   timeRemainingSeconds: number;
   isSubmitting: boolean;
   isExpired: boolean;
 
-  // Actions
-  startExam: (delivery: ExamDelivery) => void;
-  selectOption: (questionId: string, optionId: string, multiSelect: boolean) => void;
+  startExam: (delivery: StartAttemptResponse) => void;
+  selectOption: (questionId: string, optionIndex: number) => void;
   setCurrentQuestion: (index: number) => void;
   tickTimer: () => void;
   markExpired: () => void;
   setSubmitting: (v: boolean) => void;
   clearExam: () => void;
 
-  // Derived
   getAnswers: () => AnswerSubmission[];
   isAnswered: (questionId: string) => boolean;
   answeredCount: () => number;
@@ -33,31 +30,24 @@ export const useExamStore = create<ExamState>((set, get) => ({
   isSubmitting: false,
   isExpired: false,
 
-  startExam: (delivery) =>
+  startExam: (delivery) => {
+    const now = new Date().getTime();
+    const expires = new Date(delivery.expiresAt).getTime();
+    const remaining = Math.max(0, Math.floor((expires - now) / 1000));
     set({
       delivery,
       answers: {},
       currentQuestionIndex: 0,
-      timeRemainingSeconds: delivery.timeRemainingSeconds,
+      timeRemainingSeconds: remaining,
       isSubmitting: false,
       isExpired: false,
-    }),
+    });
+  },
 
-  selectOption: (questionId, optionId, multiSelect) =>
-    set((state) => {
-      const current = state.answers[questionId] || [];
-      let next: string[];
-
-      if (multiSelect) {
-        next = current.includes(optionId)
-          ? current.filter((id) => id !== optionId)
-          : [...current, optionId];
-      } else {
-        next = [optionId]; // single choice — replace
-      }
-
-      return { answers: { ...state.answers, [questionId]: next } };
-    }),
+  selectOption: (questionId, optionIndex) =>
+    set((state) => ({
+      answers: { ...state.answers, [questionId]: optionIndex },
+    })),
 
   setCurrentQuestion: (index) => set({ currentQuestionIndex: index }),
 
@@ -83,14 +73,13 @@ export const useExamStore = create<ExamState>((set, get) => ({
     }),
 
   getAnswers: (): AnswerSubmission[] =>
-    Object.entries(get().answers).map(([questionId, selectedOptionIds]) => ({
+    Object.entries(get().answers).map(([questionId, selectedOptionIndex]) => ({
       questionId,
-      selectedOptionIds,
+      selectedOptionIndex,
     })),
 
-  isAnswered: (questionId: string) =>
-    (get().answers[questionId]?.length || 0) > 0,
+  isAnswered: (questionId: string) => get().answers[questionId] != null,
 
   answeredCount: () =>
-    Object.values(get().answers).filter((ids) => ids.length > 0).length,
+    Object.values(get().answers).filter((v) => v != null).length,
 }));

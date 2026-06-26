@@ -18,9 +18,8 @@ import type { ExamAttempt, AttemptStatus } from "@/types";
 
 const STATUS_BADGE: Record<AttemptStatus, { variant: "primary" | "success" | "warning" | "default"; label: string }> = {
   InProgress: { variant: "primary", label: "In Progress" },
-  Submitted: { variant: "warning", label: "Submitted" },
-  Graded: { variant: "success", label: "Graded" },
-  Expired: { variant: "default", label: "Expired" },
+  Completed: { variant: "success", label: "Completed" },
+  TimedOut: { variant: "warning", label: "Timed Out" },
 };
 
 function AttemptDetailModal({
@@ -30,70 +29,54 @@ function AttemptDetailModal({
   attempt: ExamAttempt;
   onClose: () => void;
 }) {
-  const passed = attempt.passed;
-  const percentage = attempt.percentage ?? 0;
-
   return (
     <Modal isOpen onClose={onClose} title="Attempt Detail" size="lg">
       <div className="space-y-5">
-        {/* Exam info */}
         <div className="rounded-lg bg-slate-50 p-4">
           <p className="text-sm font-semibold text-slate-900">{attempt.exam.title}</p>
           <p className="mt-0.5 text-xs text-slate-500">
-            Attempt #{attempt.attemptNumber} · Started {formatDate(attempt.startedAt)}
+            Started {formatDate(attempt.startedAt)}
           </p>
         </div>
 
-        {/* Score */}
-        {attempt.status === "Graded" && (
+        {attempt.status === "Completed" && attempt.score != null && (
           <div className="flex items-center gap-4">
             <div
               className={`flex h-20 w-20 shrink-0 flex-col items-center justify-center rounded-full border-4 font-bold ${
-                passed
+                attempt.isPassed
                   ? "border-green-400 text-green-600"
                   : "border-red-400 text-red-600"
               }`}
             >
-              <span className="text-2xl">{percentage}%</span>
+              <span className="text-2xl">{attempt.score}%</span>
             </div>
             <div>
               <p className="flex items-center gap-1.5 font-semibold text-slate-900">
-                {passed ? (
+                {attempt.isPassed ? (
                   <CheckCircle className="h-5 w-5 text-green-500" />
                 ) : (
                   <XCircle className="h-5 w-5 text-red-500" />
                 )}
-                {passed ? "Passed" : "Failed"}
+                {attempt.isPassed ? "Passed" : "Failed"}
               </p>
               <p className="mt-1 text-sm text-slate-500">
-                Score: {attempt.score} · Pass threshold: {attempt.exam.passingScore}%
+                Score: {attempt.score}% · Pass threshold: {attempt.exam.passingPercentage}%
               </p>
-              {attempt.timeTakenSeconds && (
-                <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-400">
-                  <Clock className="h-3.5 w-3.5" />
-                  {Math.floor(attempt.timeTakenSeconds / 60)}m {attempt.timeTakenSeconds % 60}s
-                </p>
-              )}
             </div>
           </div>
         )}
 
-        {/* Timeline */}
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
             <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Started</p>
             <p className="mt-0.5 text-slate-900">{formatDate(attempt.startedAt)}</p>
           </div>
-          {attempt.submittedAt && (
+          {attempt.completedAt && (
             <div>
-              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Submitted</p>
-              <p className="mt-0.5 text-slate-900">{formatDate(attempt.submittedAt)}</p>
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Completed</p>
+              <p className="mt-0.5 text-slate-900">{formatDate(attempt.completedAt)}</p>
             </div>
           )}
-          <div>
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Expires / Expired</p>
-            <p className="mt-0.5 text-slate-900">{formatDate(attempt.expiresAt)}</p>
-          </div>
           <div>
             <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Status</p>
             <Badge variant={STATUS_BADGE[attempt.status].variant} dot className="mt-0.5">
@@ -139,7 +122,6 @@ export default function AdminExamAttemptsPage() {
         <p className="page-subtitle">Review all student exam attempts across all exams.</p>
       </div>
 
-      {/* Filters */}
       <div className="mb-4 flex flex-wrap gap-3">
         <div className="w-64">
           <select
@@ -156,9 +138,8 @@ export default function AdminExamAttemptsPage() {
         <Select
           options={[
             { value: "InProgress", label: "In Progress" },
-            { value: "Submitted", label: "Submitted" },
-            { value: "Graded", label: "Graded" },
-            { value: "Expired", label: "Expired" },
+            { value: "Completed", label: "Completed" },
+            { value: "TimedOut", label: "Timed Out" },
           ]}
           placeholder="All Statuses"
           value={statusFilter}
@@ -172,11 +153,11 @@ export default function AdminExamAttemptsPage() {
           <TableRow>
             <TableHead>Student</TableHead>
             <TableHead>Exam</TableHead>
-            <TableHead>Attempt #</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Score</TableHead>
             <TableHead>Result</TableHead>
             <TableHead>Started</TableHead>
+            <TableHead>Completed</TableHead>
             <TableHead className="text-right">Detail</TableHead>
           </TableRow>
         </TableHeader>
@@ -200,18 +181,15 @@ export default function AdminExamAttemptsPage() {
                       {attempt.exam.title}
                     </p>
                   </TableCell>
-                  <TableCell className="text-sm text-slate-500">
-                    #{attempt.attemptNumber}
-                  </TableCell>
                   <TableCell>
                     <Badge variant={status.variant} dot>{status.label}</Badge>
                   </TableCell>
                   <TableCell className="text-sm text-slate-700">
-                    {attempt.percentage != null ? `${attempt.percentage}%` : "—"}
+                    {attempt.score != null ? `${attempt.score}%` : "—"}
                   </TableCell>
                   <TableCell>
-                    {attempt.status === "Graded" ? (
-                      attempt.passed ? (
+                    {attempt.status === "Completed" && attempt.isPassed != null ? (
+                      attempt.isPassed ? (
                         <span className="flex items-center gap-1 text-xs font-medium text-green-600">
                           <CheckCircle className="h-3.5 w-3.5" /> Pass
                         </span>
@@ -226,6 +204,9 @@ export default function AdminExamAttemptsPage() {
                   </TableCell>
                   <TableCell className="text-sm text-slate-500">
                     {formatRelativeTime(attempt.startedAt)}
+                  </TableCell>
+                  <TableCell className="text-sm text-slate-500">
+                    {attempt.completedAt ? formatRelativeTime(attempt.completedAt) : "—"}
                   </TableCell>
                   <TableCell className="text-right">
                     <button

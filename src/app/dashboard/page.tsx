@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { BookOpen, Award, GraduationCap, ArrowRight } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { resourcesApi } from "@/lib/resources";
+import { examsApi } from "@/lib/exams";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,6 +18,11 @@ export default function DashboardOverviewPage() {
   const { data: enrollments, isLoading } = useQuery({
     queryKey: ["my-enrollments"],
     queryFn: resourcesApi.getMyEnrollments,
+  });
+
+  const { data: attemptsData } = useQuery({
+    queryKey: ["my-attempts-stats"],
+    queryFn: () => examsApi.getMyAttempts({ pageNumber: 1, pageSize: 1 }),
   });
 
   const recentEnrollments = enrollments?.slice(0, 4) || [];
@@ -51,7 +57,9 @@ export default function DashboardOverviewPage() {
               <GraduationCap className="h-6 w-6 text-amber-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-slate-900">—</p>
+              <p className="text-2xl font-bold text-slate-900">
+                {attemptsData?.totalCount ?? "—"}
+              </p>
               <p className="text-sm text-slate-500">Exams taken</p>
             </div>
           </CardContent>

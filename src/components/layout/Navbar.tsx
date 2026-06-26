@@ -15,20 +15,25 @@ import {
 } from "lucide-react";
 import { cn, getInitials } from "@/lib/utils";
 import { useAuthStore } from "@/store/authStore";
+import { useFeatureFlag } from "@/components/common/FeatureGate";
 import { Button } from "@/components/ui/button";
 import { Dropdown } from "@/components/ui/dropdown";
 
-const NAV_LINKS = [
+const BASE_NAV_LINKS = [
   { label: "Courses", href: "/resources?type=Video" },
   { label: "PDFs", href: "/resources?type=PDF" },
   { label: "Blog", href: "/resources?type=Blog" },
-  { label: "Exams", href: "/exams" },
 ];
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   const { user, logout, isAuthenticated } = useAuthStore();
+  const examsEnabled = useFeatureFlag("enable_exams");
+
+  const navLinks = examsEnabled
+    ? [...BASE_NAV_LINKS, { label: "Exams", href: "/exams" }]
+    : BASE_NAV_LINKS;
 
   const userMenuItems = [
     {
@@ -74,7 +79,7 @@ export function Navbar() {
         {/* Desktop Nav */}
         {isAuthenticated && (
           <div className="hidden items-center gap-1 md:flex">
-            {NAV_LINKS.map((link) => (
+            {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -139,7 +144,7 @@ export function Navbar() {
         <div className="border-t border-slate-200 bg-white px-4 py-4 md:hidden">
           {isAuthenticated && (
             <div className="space-y-1">
-              {NAV_LINKS.map((link) => (
+              {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}

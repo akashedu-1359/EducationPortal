@@ -1,81 +1,46 @@
-export type QuestionType = "SingleChoice" | "MultipleChoice" | "TrueFalse";
-export type ExamStatus = "Draft" | "Published" | "Archived";
-export type AttemptStatus = "InProgress" | "Submitted" | "Graded" | "Expired";
-export type DifficultyLevel = "Easy" | "Medium" | "Hard";
-
-export interface QuestionOption {
-  id: string;
-  text: string;
-  order: number;
-}
+export type ExamStatus = "Draft" | "Active" | "Completed";
+export type AttemptStatus = "InProgress" | "Completed" | "TimedOut";
 
 export interface Question {
   id: string;
   examId: string;
-  text: string;
-  type: QuestionType;
-  difficulty: DifficultyLevel;
-  marks: number;
-  options: QuestionOption[];
-  explanation?: string; // only shown after attempt
-  order: number;
+  questionText: string;
+  option1: string;
+  option2: string;
+  option3: string;
+  option4: string;
+  sortOrder: number;
+  explanation?: string;
 }
 
-// Question with correct answers exposed (admin only)
 export interface QuestionAdmin extends Question {
-  correctOptionIds: string[];
+  correctOptionIndex: number;
 }
 
 export interface Exam {
   id: string;
   title: string;
-  slug: string;
   description: string;
-  thumbnailUrl?: string;
   status: ExamStatus;
-  resourceId?: string; // linked resource, if any
-  passingScore: number; // percentage (0-100)
-  totalMarks: number;
+  passingPercentage: number;
   durationMinutes: number;
   maxAttempts: number;
-  shuffleQuestions: boolean;
-  shuffleOptions: boolean;
-  showResultImmediately: boolean;
-  issueCertificate: boolean;
+  scheduledStartAt?: string;
+  scheduledEndAt?: string;
   questionCount: number;
-  attemptCount: number;
   createdAt: string;
-  updatedAt: string;
 }
 
-export interface ExamAttempt {
-  id: string;
-  examId: string;
-  exam: Exam;
-  userId: string;
-  status: AttemptStatus;
-  startedAt: string;
-  submittedAt?: string;
-  expiresAt: string;
-  score?: number;
-  percentage?: number;
-  passed?: boolean;
-  timeTakenSeconds?: number;
-  attemptNumber: number;
-}
-
-// Delivered to student during active exam (no correct answers)
-export interface ExamDelivery {
+export interface StartAttemptResponse {
   attemptId: string;
-  exam: Exam;
-  questions: Question[];
+  startedAt: string;
   expiresAt: string;
-  timeRemainingSeconds: number;
+  questions: Question[];
 }
 
 export interface AnswerSubmission {
   questionId: string;
-  selectedOptionIds: string[];
+  selectedOptionIndex: number | null;
 }
 
 export interface ExamSubmitRequest {
@@ -83,50 +48,100 @@ export interface ExamSubmitRequest {
   answers: AnswerSubmission[];
 }
 
-export interface ExamResult {
+export interface ExamSubmitResponse {
+  score: number;
+  isPassed: boolean;
+  passingPercentage: number;
+  totalQuestions: number;
+  correctAnswers: number;
+}
+
+export interface QuestionResultDto {
+  questionId: string;
+  questionText: string;
+  option1: string;
+  option2: string;
+  option3: string;
+  option4: string;
+  selectedOptionIndex: number | null;
+  correctOptionIndex: number;
+  isCorrect: boolean;
+  explanation?: string;
+}
+
+export interface AttemptResultDto {
   attemptId: string;
   examId: string;
   examTitle: string;
   score: number;
-  totalMarks: number;
-  percentage: number;
-  passed: boolean;
-  passingScore: number;
-  timeTakenSeconds: number;
-  submittedAt: string;
+  isPassed: boolean;
+  passingPercentage: number;
+  totalQuestions: number;
+  correctAnswers: number;
+  startedAt: string;
+  completedAt?: string;
   certificateId?: string;
-  questionResults?: QuestionResult[];
+  questionResults: QuestionResultDto[];
 }
 
-export interface QuestionResult {
-  questionId: string;
-  questionText: string;
-  selectedOptionIds: string[];
-  correctOptionIds: string[];
-  isCorrect: boolean;
-  marksAwarded: number;
-  explanation?: string;
+export interface UserExamDetailDto {
+  id: string;
+  title: string;
+  description: string;
+  durationMinutes: number;
+  passingPercentage: number;
+  maxAttempts: number;
+  status: ExamStatus;
+  questionCount: number;
+  userAttemptCount: number;
+  createdAt: string;
 }
+
+export interface UserAttemptDto {
+  id: string;
+  examId: string;
+  examTitle: string;
+  startedAt: string;
+  completedAt?: string;
+  status: AttemptStatus;
+  score?: number;
+  isPassed?: boolean;
+}
+
+// Admin attempt type with nested exam info (used by admin pages)
+export interface ExamAttempt {
+  id: string;
+  examId: string;
+  exam: Exam;
+  userId: string;
+  status: AttemptStatus;
+  startedAt: string;
+  completedAt?: string;
+  score?: number;
+  isPassed?: boolean;
+}
+
+// Alias kept for backward compatibility
+export type ExamDelivery = StartAttemptResponse;
 
 export interface CreateExamRequest {
   title: string;
   description: string;
-  resourceId?: string;
-  passingScore: number;
+  passingPercentage: number;
   durationMinutes: number;
   maxAttempts: number;
-  shuffleQuestions?: boolean;
-  shuffleOptions?: boolean;
-  showResultImmediately?: boolean;
-  issueCertificate?: boolean;
+  scheduledStartAt?: string;
+  scheduledEndAt?: string;
 }
 
 export interface CreateQuestionRequest {
   examId: string;
-  text: string;
-  type: QuestionType;
-  difficulty: DifficultyLevel;
-  marks: number;
-  options: { text: string; isCorrect: boolean }[];
+  questionText: string;
+  option1: string;
+  option2: string;
+  option3: string;
+  option4: string;
+  correctOptionIndex: number;
   explanation?: string;
+  sortOrder?: number;
 }

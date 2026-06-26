@@ -10,6 +10,7 @@ import { getApiErrorMessage } from "@/lib/api";
 import { formatTimer } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { FullPageSpinner } from "@/components/ui/spinner";
+import { ExamTimer } from "@/components/exam";
 import { cn } from "@/lib/utils";
 
 export default function ExamAttemptPage() {
@@ -38,10 +39,9 @@ export default function ExamAttemptPage() {
   const timerRef = useRef<ReturnType<typeof setInterval>>();
   const autoSubmitRef = useRef(false);
 
-  // Load exam on mount
   useEffect(() => {
-    examsApi.getBySlug(slug).then((exam) => {
-      examsApi.startAttempt(exam.id).then(startExam).catch((err) => {
+    examsApi.getDetail(slug).then((detail) => {
+      examsApi.startAttempt(detail.id).then(startExam).catch((err) => {
         toast.error(getApiErrorMessage(err));
         router.push(`/exams/${slug}`);
       });
@@ -49,14 +49,12 @@ export default function ExamAttemptPage() {
     return () => clearExam();
   }, [slug]);
 
-  // Countdown timer
   useEffect(() => {
     if (!delivery) return;
     timerRef.current = setInterval(() => tickTimer(), 1000);
     return () => clearInterval(timerRef.current);
   }, [!!delivery]);
 
-  // Auto-submit when time expires
   const submitExam = useCallback(async (auto = false) => {
     if (!delivery || isSubmitting || autoSubmitRef.current) return;
     if (auto) autoSubmitRef.current = true;
@@ -70,7 +68,7 @@ export default function ExamAttemptPage() {
         answers: getAnswers(),
       });
       toast.success(auto ? "Time's up! Exam submitted." : "Exam submitted!");
-      router.push(`/exams/results/${result.attemptId}`);
+      router.push(`/exams/results/${delivery.attemptId}`);
     } catch (err) {
       toast.error(getApiErrorMessage(err));
       setSubmitting(false);
@@ -85,21 +83,26 @@ export default function ExamAttemptPage() {
 
   if (!delivery) return <FullPageSpinner />;
 
-  const { questions, exam } = delivery;
+  const { questions } = delivery;
   const currentQ = questions[currentQuestionIndex];
-  const isMulti = currentQ.type === "MultipleChoice";
-  const selectedIds = answers[currentQ.id] || [];
-  const timeWarning = timeRemainingSeconds <= 300; // last 5 min
+  const selectedIndex = answers[currentQ.id];
+  const timeWarning = timeRemainingSeconds <= 300;
+
+  const options = [
+    { index: 0, text: currentQ.option1 },
+    { index: 1, text: currentQ.option2 },
+    { index: 2, text: currentQ.option3 },
+    { index: 3, text: currentQ.option4 },
+  ];
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Top bar */}
       <div className={cn(
         "sticky top-0 z-30 flex items-center justify-between border-b px-6 py-3",
         timeWarning ? "border-red-200 bg-red-50" : "border-slate-200 bg-white"
       )}>
         <div>
-          <p className="font-semibold text-slate-900">{exam.title}</p>
+          <p className="font-semibold text-slate-900">Exam</p>
           <p className="text-xs text-slate-500">
             {answeredCount()} of {questions.length} answered
           </p>
@@ -111,9 +114,7 @@ export default function ExamAttemptPage() {
             ? "bg-red-100 text-red-700"
             : "bg-primary-50 text-primary-700"
         )}>
-          <Clock className="h-5 w-5" />
-          {formatTimer(timeRemainingSeconds)}
-          {timeWarning && <AlertTriangle className="h-4 w-4 animate-pulse" />}
+          <ExamTimer timeRemainingSeconds={timeRemainingSeconds} isExpired={isExpired} />
         </div>
 
         <Button
@@ -128,7 +129,6 @@ export default function ExamAttemptPage() {
 
       <div className="container-pad py-8">
         <div className="flex gap-6">
-          {/* Question navigator */}
           <div className="hidden w-52 shrink-0 lg:block">
             <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
               Questions
@@ -168,31 +168,27 @@ export default function ExamAttemptPage() {
             </div>
           </div>
 
-          {/* Question card */}
           <div className="flex-1">
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-card">
               <div className="mb-1 flex items-center justify-between">
                 <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
                   Question {currentQuestionIndex + 1} of {questions.length}
                 </span>
-                <span className="text-xs text-slate-400">
-                  {currentQ.marks} mark{currentQ.marks !== 1 ? "s" : ""} ·{" "}
-                  {isMulti ? "Multiple choice" : currentQ.type === "TrueFalse" ? "True / False" : "Single choice"}
-                </span>
+                <span className="text-xs text-slate-400">Single choice</span>
               </div>
 
               <p className="mt-3 text-lg font-semibold text-slate-900 leading-snug">
-                {currentQ.text}
+                {currentQ.questionText}
               </p>
 
               <div className="mt-5 space-y-3">
-                {currentQ.options.map((option) => {
-                  const selected = selectedIds.includes(option.id);
+                {options.map((option) => {
+                  const selected = selectedIndex === option.index;
                   return (
                     <button
-                      key={option.id}
+                      key={option.index}
                       type="button"
-                      onClick={() => selectOption(currentQ.id, option.id, isMulti)}
+                      onClick={() => selectOption(currentQ.id, option.index)}
                       className={cn(
                         "flex w-full items-center gap-3 rounded-xl border-2 p-4 text-left text-sm transition-all",
                         selected
@@ -201,8 +197,7 @@ export default function ExamAttemptPage() {
                       )}
                     >
                       <div className={cn(
-                        "flex h-5 w-5 shrink-0 items-center justify-center border-2",
-                        isMulti ? "rounded" : "rounded-full",
+                        "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2",
                         selected ? "border-primary-500 bg-primary-500" : "border-slate-300"
                       )}>
                         {selected && <CheckCircle className="h-3.5 w-3.5 text-white" />}
@@ -213,7 +208,6 @@ export default function ExamAttemptPage() {
                 })}
               </div>
 
-              {/* Navigation */}
               <div className="mt-6 flex items-center justify-between">
                 <Button
                   variant="secondary"

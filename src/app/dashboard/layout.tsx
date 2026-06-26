@@ -2,25 +2,39 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useMemo } from "react";
 import { Award, BookOpen, CreditCard, GraduationCap, LayoutDashboard, User } from "lucide-react";
 import { useRequireAuth } from "@/hooks/useAuth";
+import { useFeatureFlag } from "@/components/common/FeatureGate";
 import { FullPageSpinner } from "@/components/ui/spinner";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { cn } from "@/lib/utils";
 
-const SIDEBAR_LINKS = [
+const BASE_SIDEBAR_LINKS = [
   { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
   { label: "My Content", href: "/dashboard/my-content", icon: BookOpen },
-  { label: "My Exams", href: "/dashboard/exams", icon: GraduationCap },
   { label: "Certificates", href: "/dashboard/certificates", icon: Award },
   { label: "Transactions", href: "/dashboard/transactions", icon: CreditCard },
   { label: "Profile", href: "/dashboard/profile", icon: User },
 ];
 
+const EXAMS_LINK = { label: "My Exams", href: "/dashboard/exams", icon: GraduationCap };
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { isLoading, isAuthenticated } = useRequireAuth();
   const pathname = usePathname();
+  const examsEnabled = useFeatureFlag("enable_exams");
+
+  const sidebarLinks = useMemo(() => {
+    if (!examsEnabled) return BASE_SIDEBAR_LINKS;
+    return [
+      BASE_SIDEBAR_LINKS[0],
+      BASE_SIDEBAR_LINKS[1],
+      EXAMS_LINK,
+      ...BASE_SIDEBAR_LINKS.slice(2),
+    ];
+  }, [examsEnabled]);
 
   if (isLoading || !isAuthenticated) return <FullPageSpinner />;
 
@@ -32,7 +46,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {/* Sidebar */}
           <aside className="hidden w-52 shrink-0 lg:block">
             <nav className="space-y-1">
-              {SIDEBAR_LINKS.map(({ label, href, icon: Icon }) => {
+              {sidebarLinks.map(({ label, href, icon: Icon }) => {
                 const isActive = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
                 return (
                   <Link
