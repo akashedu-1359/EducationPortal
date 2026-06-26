@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle, XCircle, Clock, Eye } from "lucide-react";
+import { CheckCircle, XCircle, Eye } from "lucide-react";
 import { examsApi } from "@/lib/exams";
 import { formatDate, formatRelativeTime } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";

@@ -2,12 +2,11 @@
 
 import { useEffect, useCallback, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { CheckCircle, Clock, AlertTriangle, ChevronLeft, ChevronRight, Send } from "lucide-react";
+import { CheckCircle, ChevronLeft, ChevronRight, Send } from "lucide-react";
 import toast from "react-hot-toast";
 import { useExamStore } from "@/store/examStore";
 import { examsApi } from "@/lib/exams";
 import { getApiErrorMessage } from "@/lib/api";
-import { formatTimer } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { FullPageSpinner } from "@/components/ui/spinner";
 import { ExamTimer } from "@/components/exam";
@@ -63,7 +62,7 @@ export default function ExamAttemptPage() {
     clearInterval(timerRef.current);
 
     try {
-      const result = await examsApi.submitExam({
+      await examsApi.submitExam({
         attemptId: delivery.attemptId,
         answers: getAnswers(),
       });

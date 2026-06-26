@@ -37,29 +37,43 @@ setup("create test user account", async () => {
   const apiCtx = await request.newContext({ baseURL: API });
 
   if (process.env.E2E_USER_EMAIL && process.env.E2E_USER_PASSWORD) {
-    // Verify existing credentials work
-    const res = await apiCtx.post("/api/auth/login", {
-      data: { email: process.env.E2E_USER_EMAIL, password: process.env.E2E_USER_PASSWORD },
-    });
-    if (res.ok()) {
-      console.log(`✓ Test user verified: ${process.env.E2E_USER_EMAIL}`);
-      await apiCtx.dispose();
-      return;
+    // Verify existing credentials work (retry on 429)
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const res = await apiCtx.post("/api/auth/login", {
+        data: { email: process.env.E2E_USER_EMAIL, password: process.env.E2E_USER_PASSWORD },
+      });
+      if (res.ok()) {
+        console.log(`✓ Test user verified: ${process.env.E2E_USER_EMAIL}`);
+        await apiCtx.dispose();
+        return;
+      }
+      if (res.status() === 429) {
+        console.warn(`⚠ Rate limited (429) on login — retrying in ${(attempt + 1) * 10}s...`);
+        await new Promise((r) => setTimeout(r, (attempt + 1) * 10000));
+        continue;
+      }
+      break;
     }
     console.warn("⚠ E2E_USER_EMAIL login failed — will register a new account");
   }
 
-  // Register a fresh test user
+  // Register a fresh test user (retry on 429 rate-limit)
   const email = uniqueEmail("e2e-user");
   const password = "TestUser@123!";
 
-  const res = await apiCtx.post("/api/auth/register", {
-    data: { fullName: "E2E Tester", email, password, confirmPassword: password },
-  });
+  let res;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    res = await apiCtx.post("/api/auth/register", {
+      data: { fullName: "E2E Tester", email, password, confirmPassword: password },
+    });
+    if (res.status() !== 429) break;
+    console.warn(`⚠ Rate limited (429) on register — retrying in ${(attempt + 1) * 10}s...`);
+    await new Promise((r) => setTimeout(r, (attempt + 1) * 10000));
+  }
 
-  if (!res.ok()) {
-    const body = await res.text();
-    throw new Error(`Failed to register test user: ${res.status()} ${body}`);
+  if (!res!.ok()) {
+    const body = await res!.text();
+    throw new Error(`Failed to register test user: ${res!.status()} ${body}`);
   }
 
   process.env.E2E_USER_EMAIL = email;

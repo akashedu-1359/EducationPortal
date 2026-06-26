@@ -103,7 +103,7 @@ const mockAttempt = {
   attemptId: "attempt-1",
   startedAt: "2024-06-01T10:00:00Z",
   expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-  questions: mockQuestions.map(({ correctOptionIndex, explanation, ...q }) => q),
+  questions: mockQuestions.map(({ correctOptionIndex: _ci, explanation: _ex, ...q }) => q),
 };
 
 const mockAttemptHistory = [
