@@ -11,6 +11,26 @@ import type {
 } from "@/types";
 import { api, unwrap } from "./api";
 
+type RawFeatureFlag = {
+  key?: string;
+  Key?: string;
+  isEnabled?: boolean;
+  IsEnabled?: boolean;
+  description?: string;
+  Description?: string;
+  updatedAt?: string;
+  UpdatedAt?: string;
+};
+
+function normalizeFeatureFlag(raw: RawFeatureFlag) {
+  return {
+    key: raw.key ?? raw.Key ?? "",
+    isEnabled: raw.isEnabled ?? raw.IsEnabled ?? false,
+    description: raw.description ?? raw.Description,
+    updatedAt: raw.updatedAt ?? raw.UpdatedAt ?? new Date().toISOString(),
+  };
+}
+
 // ─── Public CMS Endpoints (server-side / ISR) ──────────────────────────────
 
 export const cmsPublicApi = {
@@ -40,8 +60,10 @@ export const cmsPublicApi = {
   },
 
   getFeatureFlags: async (): Promise<Record<string, boolean>> => {
-    const res = await api.get("/cms/feature-flags");
-    return unwrap(res);
+    const res = await api.get("/cms/features");
+    const raw = unwrap(res) as RawFeatureFlag[];
+    const flags = raw.map(normalizeFeatureFlag);
+    return Object.fromEntries(flags.map((f) => [f.key, f.isEnabled]));
   },
 };
 
@@ -173,14 +195,30 @@ export const cmsAdminApi = {
 
   // Feature Flags
   getFeatureFlags: async (): Promise<FeatureFlag[]> => {
-    const res = await api.get("/admin/cms/feature-flags");
-    return unwrap(res);
+    const res = await api.get("/admin/cms/features");
+    const raw = unwrap(res) as RawFeatureFlag[];
+    const flags = raw.map(normalizeFeatureFlag);
+    return flags.map((f) => ({
+      id: f.key,
+      key: f.key,
+      value: f.isEnabled,
+      description: f.description,
+      updatedAt: f.updatedAt,
+    }));
   },
   updateFeatureFlag: async (
     key: string,
     value: boolean
   ): Promise<FeatureFlag> => {
-    const res = await api.put(`/admin/cms/feature-flags/${key}`, { value });
-    return unwrap(res);
+    const res = await api.patch(`/admin/cms/features/${encodeURIComponent(key)}`, {
+      isEnabled: value,
+    });
+    unwrap(res);
+    return {
+      id: key,
+      key,
+      value,
+      updatedAt: new Date().toISOString(),
+    };
   },
 };

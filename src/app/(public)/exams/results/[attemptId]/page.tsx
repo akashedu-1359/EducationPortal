@@ -1,30 +1,49 @@
-import { notFound } from "next/navigation";
+"use client";
+
+import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Award, RotateCcw } from "lucide-react";
-import { config } from "@/config";
-import type { AttemptResultDto } from "@/types";
+import { useQuery } from "@tanstack/react-query";
+import { Award, RotateCcw, AlertCircle } from "lucide-react";
+import { examsApi } from "@/lib/exams";
+import { useRequireAuth } from "@/hooks/useAuth";
+import { FullPageSpinner } from "@/components/ui/spinner";
 import { ExamResultSummary, QuestionRenderer } from "@/components/exam";
 
-interface Props {
-  params: { attemptId: string };
-}
+export default function ExamResultPage() {
+  const params = useParams();
+  const attemptId = params.attemptId as string;
+  const { isLoading: authLoading, isAuthenticated } = useRequireAuth(
+    `/auth/login?next=/exams/results/${attemptId}`
+  );
 
-async function getResult(attemptId: string): Promise<AttemptResultDto | null> {
-  try {
-    const res = await fetch(`${config.apiUrl}/api/user/exams/attempts/${attemptId}/result`, {
-      cache: "no-store",
-    });
-    if (!res.ok) return null;
-    const json = await res.json();
-    return json.data as AttemptResultDto;
-  } catch {
-    return null;
+  const { data: result, isLoading, isError } = useQuery({
+    queryKey: ["exam-result", attemptId],
+    queryFn: () => examsApi.getResult(attemptId),
+    enabled: isAuthenticated && Boolean(attemptId),
+    retry: false,
+  });
+
+  if (authLoading || !isAuthenticated || isLoading) {
+    return <FullPageSpinner />;
   }
-}
 
-export default async function ExamResultPage({ params }: Props) {
-  const result = await getResult(params.attemptId);
-  if (!result) notFound();
+  if (isError || !result) {
+    return (
+      <div className="py-20 text-center">
+        <AlertCircle className="mx-auto mb-4 h-12 w-12 text-slate-300" />
+        <p className="text-lg font-medium text-slate-900">Could not load exam results</p>
+        <p className="mt-1 text-sm text-slate-500">
+          The result may not be available yet, or you may not have access.
+        </p>
+        <Link
+          href="/dashboard/exams/attempts"
+          className="mt-4 inline-block text-sm font-medium text-primary-600 hover:text-primary-700"
+        >
+          View my attempts
+        </Link>
+      </div>
+    );
+  }
 
   const passed = result.isPassed;
 
@@ -50,15 +69,15 @@ export default async function ExamResultPage({ params }: Props) {
               </div>
             </div>
             <Link
-              href="/dashboard/exams"
+              href="/dashboard/exams/attempts"
               className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition-colors"
             >
-              My Exams
+              My Attempts
             </Link>
           </div>
         )}
 
-        {result.questionResults && result.questionResults.length > 0 && (
+        {result.questionResults.length > 0 && (
           <div className="mt-6">
             <h2 className="section-title mb-4">Answer Review</h2>
             <div className="space-y-3">
@@ -78,7 +97,7 @@ export default async function ExamResultPage({ params }: Props) {
 
         <div className="mt-8 flex gap-3">
           <Link
-            href="/exams"
+            href="/dashboard/exams"
             className="flex-1 rounded-xl border border-slate-200 px-6 py-3 text-center text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
           >
             <RotateCcw className="mr-2 inline h-4 w-4" />

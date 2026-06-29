@@ -1,0 +1,119 @@
+{
+  "format": 1,
+  "restore": {
+    "C:\\Personal\\EducationPortal\\tests\\EducationPortal.Tests.Selenium\\EducationPortal.Tests.Selenium.csproj": {}
+  },
+  "projects": {
+    "C:\\Personal\\EducationPortal\\tests\\EducationPortal.Tests.Selenium\\EducationPortal.Tests.Selenium.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Personal\\EducationPortal\\tests\\EducationPortal.Tests.Selenium\\EducationPortal.Tests.Selenium.csproj",
+        "projectName": "EducationPortal.Tests.Selenium",
+        "projectPath": "C:\\Personal\\EducationPortal\\tests\\EducationPortal.Tests.Selenium\\EducationPortal.Tests.Selenium.csproj",
+        "packagesPath": "C:\\Users\\himanshubisht\\.nuget\\packages\\",
+        "outputPath": "C:\\Personal\\EducationPortal\\tests\\EducationPortal.Tests.Selenium\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Personal\\EducationPortal\\tests\\EducationPortal.Tests.Selenium\\NuGet.Config",
+          "C:\\Users\\himanshubisht\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "10.0.100"
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "Allure.NUnit": {
+              "target": "Package",
+              "version": "[2.*, )"
+            },
+            "FluentAssertions": {
+              "target": "Package",
+              "version": "[7.*, )"
+            },
+            "Microsoft.Extensions.Configuration.Binder": {
+              "target": "Package",
+              "version": "[8.*, )"
+            },
+            "Microsoft.Extensions.Configuration.EnvironmentVariables": {
+              "target": "Package",
+              "version": "[8.*, )"
+            },
+            "Microsoft.Extensions.Configuration.Json": {
+              "target": "Package",
+              "version": "[8.*, )"
+            },
+            "Microsoft.NET.Test.Sdk": {
+              "target": "Package",
+              "version": "[17.*, )"
+            },
+            "NUnit": {
+              "target": "Package",
+              "version": "[4.*, )"
+            },
+            "NUnit3TestAdapter": {
+              "target": "Package",
+              "version": "[4.*, )"
+            },
+            "Selenium.Support": {
+              "target": "Package",
+              "version": "[4.*, )"
+            },
+            "Selenium.WebDriver": {
+              "target": "Package",
+              "version": "[4.*, )"
+            },
+            "WebDriverManager": {
+              "target": "Package",
+              "version": "[2.*, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.102/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

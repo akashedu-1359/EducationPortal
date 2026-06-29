@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { Search, BookOpen } from "lucide-react";
 import { resourcesApi } from "@/lib/resources";
 import { formatCurrency, formatDuration } from "@/lib/utils";
+import { useFeatureFlag } from "@/components/common/FeatureGate";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Pagination } from "@/components/ui/pagination";
@@ -18,6 +19,7 @@ import { Clock, Users } from "lucide-react";
 
 function ResourcesPageContent() {
   const searchParams = useSearchParams();
+  const paymentsEnabled = useFeatureFlag("enable_payments");
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const [type, setType] = useState<ResourceType | "">(
@@ -26,6 +28,13 @@ function ResourcesPageContent() {
   const [pricingType, setPricingType] = useState<PricingType | "">(
     (searchParams.get("pricing") as PricingType) || ""
   );
+
+  useEffect(() => {
+    if (paymentsEnabled === false && pricingType === "Paid") {
+      setPricingType("");
+      setPage(1);
+    }
+  }, [paymentsEnabled, pricingType]);
   const [categoryId, setCategoryId] = useState(searchParams.get("category") || "");
 
   const { data, isLoading } = useQuery({
@@ -89,7 +98,7 @@ function ResourcesPageContent() {
           <Select
             options={[
               { value: "Free", label: "Free" },
-              { value: "Paid", label: "Paid" },
+              ...(paymentsEnabled ? [{ value: "Paid", label: "Paid" }] : []),
             ]}
             placeholder="All pricing"
             value={pricingType}
@@ -172,10 +181,13 @@ function ResourcesPageContent() {
                         {resource.enrollmentCount}
                       </span>
                     </div>
-                    {resource.pricingType === "Paid" && resource.price && (
+                    {paymentsEnabled && resource.pricingType === "Paid" && resource.price && (
                       <span className="font-semibold text-slate-700">
                         {formatCurrency(resource.price, resource.currency)}
                       </span>
+                    )}
+                    {!paymentsEnabled && resource.pricingType === "Paid" && (
+                      <Badge variant="default">Paid</Badge>
                     )}
                   </div>
                 </div>

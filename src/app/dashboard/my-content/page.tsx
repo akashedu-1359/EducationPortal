@@ -5,14 +5,19 @@ import Link from "next/link";
 import Image from "next/image";
 import { BookOpen, Clock, ArrowRight } from "lucide-react";
 import { resourcesApi } from "@/lib/resources";
+import { useAuthStore } from "@/store/authStore";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDate, formatDuration } from "@/lib/utils";
 
 export default function DashboardMyContentPage() {
+  const { isAuthenticated, isLoading: authLoading } = useAuthStore();
+  const authReady = isAuthenticated && !authLoading;
+
   const { data: enrollments, isLoading } = useQuery({
     queryKey: ["my-enrollments"],
     queryFn: resourcesApi.getMyEnrollments,
+    enabled: authReady,
   });
 
   return (

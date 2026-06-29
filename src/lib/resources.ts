@@ -34,12 +34,12 @@ export const resourcesApi = {
   // ─── Enrollment ──────────────────────────────────────────────────────────────
 
   enroll: async (resourceId: string): Promise<Enrollment> => {
-    const res = await api.post(`/resources/${resourceId}/enroll`);
+    const res = await api.post(`/user/resources/${resourceId}/enroll`);
     return unwrap(res);
   },
 
   getMyEnrollments: async (): Promise<Enrollment[]> => {
-    const res = await api.get("/me/enrollments");
+    const res = await api.get("/user/enrollments");
     return unwrap(res);
   },
 

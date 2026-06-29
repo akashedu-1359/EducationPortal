@@ -4,9 +4,9 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { CheckCircle, XCircle, Eye } from "lucide-react";
 import { examsApi } from "@/lib/exams";
-import { formatDate, formatRelativeTime } from "@/lib/utils";
+import { formatRelativeTime } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { Modal } from "@/components/ui/modal";
+import { AttemptDetailModal } from "@/components/admin/AttemptDetailModal";
 import { Select } from "@/components/ui/dropdown";
 import { Pagination } from "@/components/ui/pagination";
 import { TableRowSkeleton } from "@/components/ui/skeleton";
@@ -21,73 +21,6 @@ const STATUS_BADGE: Record<AttemptStatus, { variant: "primary" | "success" | "wa
   Completed: { variant: "success", label: "Completed" },
   TimedOut: { variant: "warning", label: "Timed Out" },
 };
-
-function AttemptDetailModal({
-  attempt,
-  onClose,
-}: {
-  attempt: ExamAttempt;
-  onClose: () => void;
-}) {
-  return (
-    <Modal isOpen onClose={onClose} title="Attempt Detail" size="lg">
-      <div className="space-y-5">
-        <div className="rounded-lg bg-slate-50 p-4">
-          <p className="text-sm font-semibold text-slate-900">{attempt.exam.title}</p>
-          <p className="mt-0.5 text-xs text-slate-500">
-            Started {formatDate(attempt.startedAt)}
-          </p>
-        </div>
-
-        {attempt.status === "Completed" && attempt.score != null && (
-          <div className="flex items-center gap-4">
-            <div
-              className={`flex h-20 w-20 shrink-0 flex-col items-center justify-center rounded-full border-4 font-bold ${
-                attempt.isPassed
-                  ? "border-green-400 text-green-600"
-                  : "border-red-400 text-red-600"
-              }`}
-            >
-              <span className="text-2xl">{attempt.score}%</span>
-            </div>
-            <div>
-              <p className="flex items-center gap-1.5 font-semibold text-slate-900">
-                {attempt.isPassed ? (
-                  <CheckCircle className="h-5 w-5 text-green-500" />
-                ) : (
-                  <XCircle className="h-5 w-5 text-red-500" />
-                )}
-                {attempt.isPassed ? "Passed" : "Failed"}
-              </p>
-              <p className="mt-1 text-sm text-slate-500">
-                Score: {attempt.score}% · Pass threshold: {attempt.exam.passingPercentage}%
-              </p>
-            </div>
-          </div>
-        )}
-
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Started</p>
-            <p className="mt-0.5 text-slate-900">{formatDate(attempt.startedAt)}</p>
-          </div>
-          {attempt.completedAt && (
-            <div>
-              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Completed</p>
-              <p className="mt-0.5 text-slate-900">{formatDate(attempt.completedAt)}</p>
-            </div>
-          )}
-          <div>
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Status</p>
-            <Badge variant={STATUS_BADGE[attempt.status].variant} dot className="mt-0.5">
-              {STATUS_BADGE[attempt.status].label}
-            </Badge>
-          </div>
-        </div>
-      </div>
-    </Modal>
-  );
-}
 
 export default function AdminExamAttemptsPage() {
   const [page, setPage] = useState(1);
@@ -188,7 +121,9 @@ export default function AdminExamAttemptsPage() {
                     {attempt.score != null ? `${attempt.score}%` : "—"}
                   </TableCell>
                   <TableCell>
-                    {attempt.status === "Completed" && attempt.isPassed != null ? (
+                    {attempt.status === "TimedOut" ? (
+                      <span className="text-xs font-medium text-amber-600">Timed Out</span>
+                    ) : attempt.status === "Completed" && attempt.isPassed != null ? (
                       attempt.isPassed ? (
                         <span className="flex items-center gap-1 text-xs font-medium text-green-600">
                           <CheckCircle className="h-3.5 w-3.5" /> Pass

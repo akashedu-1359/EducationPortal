@@ -1,10 +1,14 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { Search, BookOpen } from "lucide-react";
+import { Search, BookOpen, LogIn } from "lucide-react";
 import { examsApi } from "@/lib/exams";
+import { useAuthStore } from "@/store/authStore";
+import { useFeatureFlag } from "@/components/common/FeatureGate";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ExamCard } from "@/components/exam";
@@ -14,10 +18,13 @@ const PAGE_SIZE = 12;
 export default function ExamsListingPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const { isAuthenticated } = useAuthStore();
+  const examsEnabled = useFeatureFlag("enable_exams");
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["exams", page],
     queryFn: () => examsApi.list({ pageNumber: page, pageSize: PAGE_SIZE }),
+    enabled: examsEnabled !== false,
   });
 
   const filteredExams = useMemo(() => {
@@ -40,6 +47,26 @@ export default function ExamsListingPage() {
             Test your knowledge and earn certificates
           </p>
         </div>
+
+        {examsEnabled === false && (
+          <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            Exams are currently disabled. An admin can enable them under{" "}
+            <strong>Admin → CMS → Feature Flags → enable_exams</strong>.
+          </div>
+        )}
+
+        {!isAuthenticated && examsEnabled !== false && (
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-primary-200 bg-primary-50 px-4 py-3">
+            <p className="text-sm text-primary-800">
+              Log in to start an exam and save your results.
+            </p>
+            <Link href={`/auth/login?next=/exams`}>
+              <Button size="sm" leftIcon={<LogIn className="h-4 w-4" />}>
+                Log in
+              </Button>
+            </Link>
+          </div>
+        )}
 
         <div className="mb-6 max-w-md">
           <Input
@@ -67,6 +94,12 @@ export default function ExamsListingPage() {
                 </div>
               </div>
             ))}
+          </div>
+        ) : isError ? (
+          <div className="py-20 text-center">
+            <BookOpen className="mx-auto mb-4 h-12 w-12 text-slate-300" />
+            <p className="text-lg font-medium text-slate-900">Could not load exams</p>
+            <p className="mt-1 text-sm text-slate-500">Please try again later.</p>
           </div>
         ) : filteredExams.length === 0 ? (
           <div className="py-20 text-center">

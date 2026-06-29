@@ -1,0 +1,86 @@
+name: Selenium E2E Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'Frontend URL'
+        required: false
+        default: 'https://education-portal-rpvr.vercel.app'
+      api_url:
+        description: 'Backend API URL'
+        required: false
+        default: 'https://eduportal-backend-ssg4.onrender.com'
+      browser:
+        description: 'Browser (chrome, firefox, edge)'
+        required: false
+        default: 'chrome'
+  push:
+    branches: [main]
+    paths:
+      - 'tests/EducationPortal.Tests.Selenium/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tests/EducationPortal.Tests.Selenium/**'
+
+jobs:
+  selenium-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: 'stable'
+
+      - name: Restore NuGet packages
+        run: dotnet restore tests/EducationPortal.Tests.Selenium/EducationPortal.Tests.Selenium.csproj
+
+      - name: Build test project
+        run: dotnet build tests/EducationPortal.Tests.Selenium/ --no-restore --configuration Release
+
+      - name: Run Selenium tests
+        run: |
+          dotnet test tests/EducationPortal.Tests.Selenium/ \
+            --no-build \
+            --configuration Release \
+            --logger "trx;LogFileName=test-results.trx" \
+            --logger "html;LogFileName=test-results.html" \
+            --results-directory tests/EducationPortal.Tests.Selenium/TestResults
+        env:
+          SELENIUM_BASE_URL: ${{ inputs.base_url || 'https://education-portal-rpvr.vercel.app' }}
+          SELENIUM_API_URL: ${{ inputs.api_url || 'https://eduportal-backend-ssg4.onrender.com' }}
+          SELENIUM_BROWSER: ${{ inputs.browser || 'chrome' }}
+          SELENIUM_HEADLESS: 'true'
+          SELENIUM_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+          SELENIUM_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+          SELENIUM_ADMIN_EMAIL: ${{ secrets.TEST_ADMIN_EMAIL }}
+          SELENIUM_ADMIN_PASSWORD: ${{ secrets.TEST_ADMIN_PASSWORD }}
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: selenium-test-results
+          path: |
+            tests/EducationPortal.Tests.Selenium/TestResults/
+          retention-days: 30
+
+      - name: Upload screenshots on failure
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: selenium-failure-screenshots
+          path: |
+            tests/EducationPortal.Tests.Selenium/TestResults/Screenshots/
+          retention-days: 14

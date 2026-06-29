@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
+  Award,
   BookOpen,
   ChevronDown,
+  CreditCard,
   GraduationCap,
   LayoutDashboard,
   LogOut,
@@ -14,7 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { cn, getInitials } from "@/lib/utils";
-import { useAuthStore } from "@/store/authStore";
+import { useAuthStore, getHomeHref } from "@/store/authStore";
 import { useFeatureFlag } from "@/components/common/FeatureGate";
 import { Button } from "@/components/ui/button";
 import { Dropdown } from "@/components/ui/dropdown";
@@ -29,47 +31,72 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   const { user, logout, isAuthenticated } = useAuthStore();
+  const homeHref = getHomeHref(user, isAuthenticated);
   const examsEnabled = useFeatureFlag("enable_exams");
+  const certificatesEnabled = useFeatureFlag("enable_certificates");
+  const paymentsEnabled = useFeatureFlag("enable_payments");
 
-  const navLinks = examsEnabled
-    ? [...BASE_NAV_LINKS, { label: "Exams", href: "/exams" }]
-    : BASE_NAV_LINKS;
+  const navLinks =
+    isAuthenticated && examsEnabled
+      ? [...BASE_NAV_LINKS, { label: "Exams", href: "/dashboard/exams" }]
+      : BASE_NAV_LINKS;
 
-  const userMenuItems = [
-    {
-      label: "My Dashboard",
-      icon: <LayoutDashboard className="h-4 w-4" />,
-      onClick: () => (window.location.href = "/dashboard"),
-    },
-    {
+  const userMenuItems = useMemo(() => {
+    const items = [
+      {
+        label: "My Dashboard",
+        icon: <LayoutDashboard className="h-4 w-4" />,
+        onClick: () => (window.location.href = "/dashboard"),
+      },
+    ];
+    if (examsEnabled) {
+      items.push({
+        label: "Exams",
+        icon: <GraduationCap className="h-4 w-4" />,
+        onClick: () => (window.location.href = "/dashboard/exams"),
+      });
+    }
+    items.push({
       label: "My Content",
       icon: <BookOpen className="h-4 w-4" />,
       onClick: () => (window.location.href = "/dashboard/my-content"),
-    },
-    {
-      label: "Certificates",
-      icon: <GraduationCap className="h-4 w-4" />,
-      onClick: () => (window.location.href = "/dashboard/certificates"),
-    },
-    { label: "", isDivider: true },
-    {
-      label: "Profile Settings",
-      icon: <Settings className="h-4 w-4" />,
-      onClick: () => (window.location.href = "/dashboard/profile"),
-    },
-    {
-      label: "Sign Out",
-      icon: <LogOut className="h-4 w-4" />,
-      isDanger: true,
-      onClick: () => logout(),
-    },
-  ];
+    });
+    if (certificatesEnabled) {
+      items.push({
+        label: "Certificates",
+        icon: <Award className="h-4 w-4" />,
+        onClick: () => (window.location.href = "/dashboard/certificates"),
+      });
+    }
+    if (paymentsEnabled) {
+      items.push({
+        label: "Transactions",
+        icon: <CreditCard className="h-4 w-4" />,
+        onClick: () => (window.location.href = "/dashboard/transactions"),
+      });
+    }
+    items.push(
+      { label: "", isDivider: true },
+      {
+        label: "Profile Settings",
+        icon: <Settings className="h-4 w-4" />,
+        onClick: () => (window.location.href = "/dashboard/profile"),
+      },
+      {
+        label: "Sign Out",
+        icon: <LogOut className="h-4 w-4" />,
+        isDanger: true,
+        onClick: () => logout(),
+      }
+    );
+    return items;
+  }, [examsEnabled, certificatesEnabled, paymentsEnabled, logout]);
 
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
       <nav className="container-pad flex h-16 items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 font-bold text-slate-900">
+        <Link href={homeHref} className="flex items-center gap-2 font-bold text-slate-900">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-600 text-white">
             <GraduationCap className="h-5 w-5" />
           </div>

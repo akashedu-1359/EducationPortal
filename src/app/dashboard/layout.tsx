@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
-import { Award, BookOpen, CreditCard, GraduationCap, LayoutDashboard, User } from "lucide-react";
+import { Award, BookOpen, CreditCard, GraduationCap, History, LayoutDashboard, User } from "lucide-react";
 import { useRequireAuth } from "@/hooks/useAuth";
 import { useFeatureFlag } from "@/components/common/FeatureGate";
 import { FullPageSpinner } from "@/components/ui/spinner";
@@ -11,30 +11,35 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { cn } from "@/lib/utils";
 
-const BASE_SIDEBAR_LINKS = [
-  { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
-  { label: "My Content", href: "/dashboard/my-content", icon: BookOpen },
-  { label: "Certificates", href: "/dashboard/certificates", icon: Award },
-  { label: "Transactions", href: "/dashboard/transactions", icon: CreditCard },
-  { label: "Profile", href: "/dashboard/profile", icon: User },
-];
-
-const EXAMS_LINK = { label: "My Exams", href: "/dashboard/exams", icon: GraduationCap };
+const OVERVIEW_LINK = { label: "Overview", href: "/dashboard", icon: LayoutDashboard };
+const MY_CONTENT_LINK = { label: "My Content", href: "/dashboard/my-content", icon: BookOpen };
+const CERTIFICATES_LINK = { label: "Certificates", href: "/dashboard/certificates", icon: Award };
+const TRANSACTIONS_LINK = { label: "Transactions", href: "/dashboard/transactions", icon: CreditCard };
+const PROFILE_LINK = { label: "Profile", href: "/dashboard/profile", icon: User };
+const EXAMS_BROWSE_LINK = { label: "Exams", href: "/dashboard/exams", icon: GraduationCap };
+const EXAMS_ATTEMPTS_LINK = { label: "My Attempts", href: "/dashboard/exams/attempts", icon: History };
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { isLoading, isAuthenticated } = useRequireAuth();
   const pathname = usePathname();
   const examsEnabled = useFeatureFlag("enable_exams");
+  const certificatesEnabled = useFeatureFlag("enable_certificates");
+  const paymentsEnabled = useFeatureFlag("enable_payments");
 
   const sidebarLinks = useMemo(() => {
-    if (!examsEnabled) return BASE_SIDEBAR_LINKS;
-    return [
-      BASE_SIDEBAR_LINKS[0],
-      BASE_SIDEBAR_LINKS[1],
-      EXAMS_LINK,
-      ...BASE_SIDEBAR_LINKS.slice(2),
-    ];
-  }, [examsEnabled]);
+    const links = [OVERVIEW_LINK, MY_CONTENT_LINK];
+    if (examsEnabled) {
+      links.push(EXAMS_BROWSE_LINK, EXAMS_ATTEMPTS_LINK);
+    }
+    if (certificatesEnabled) {
+      links.push(CERTIFICATES_LINK);
+    }
+    if (paymentsEnabled) {
+      links.push(TRANSACTIONS_LINK);
+    }
+    links.push(PROFILE_LINK);
+    return links;
+  }, [examsEnabled, certificatesEnabled, paymentsEnabled]);
 
   if (isLoading || !isAuthenticated) return <FullPageSpinner />;
 
@@ -47,7 +52,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <aside className="hidden w-52 shrink-0 lg:block">
             <nav className="space-y-1">
               {sidebarLinks.map(({ label, href, icon: Icon }) => {
-                const isActive = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+                const isActive =
+                  href === "/dashboard/exams"
+                    ? pathname === "/dashboard/exams"
+                    : pathname === href ||
+                      (href !== "/dashboard" && pathname.startsWith(href));
                 return (
                   <Link
                     key={href}

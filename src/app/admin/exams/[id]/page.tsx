@@ -8,12 +8,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
   ArrowLeft, Pencil, Globe, EyeOff, Plus, Trash2,
-  CheckCircle, XCircle, Clock, Eye,
+  CheckCircle, XCircle, Clock, Eye, Upload,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { examsApi } from "@/lib/exams";
 import { getApiErrorMessage } from "@/lib/api";
-import { formatDate, formatRelativeTime } from "@/lib/utils";
+import { formatDate, formatRelativeTime, datetimeLocalToIsoUtc, isoUtcToDatetimeLocal, formatDateTime } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +21,8 @@ import { Modal, ConfirmModal } from "@/components/ui/modal";
 import { Textarea } from "@/components/ui/textarea";
 import { TableRowSkeleton } from "@/components/ui/skeleton";
 import { FullPageSpinner } from "@/components/ui/spinner";
+import { BulkUploadQuestionsModal } from "@/components/admin/BulkUploadQuestionsModal";
+import { AttemptDetailModal } from "@/components/admin/AttemptDetailModal";
 import {
   Table, TableHeader, TableBody, TableRow,
   TableHead, TableCell, TableEmpty,
@@ -32,6 +34,7 @@ import type {
 
 const STATUS_BADGE = {
   Draft: { label: "Draft", variant: "default" as const },
+  Scheduled: { label: "Scheduled", variant: "info" as const },
   Active: { label: "Active", variant: "success" as const },
   Completed: { label: "Completed", variant: "warning" as const },
 };
@@ -71,12 +74,8 @@ function EditExamModal({ exam, onClose }: { exam: Exam; onClose: () => void }) {
       passingPercentage: exam.passingPercentage,
       durationMinutes: exam.durationMinutes,
       maxAttempts: exam.maxAttempts,
-      scheduledStartAt: exam.scheduledStartAt
-        ? new Date(exam.scheduledStartAt).toISOString().slice(0, 16)
-        : "",
-      scheduledEndAt: exam.scheduledEndAt
-        ? new Date(exam.scheduledEndAt).toISOString().slice(0, 16)
-        : "",
+      scheduledStartAt: isoUtcToDatetimeLocal(exam.scheduledStartAt),
+      scheduledEndAt: isoUtcToDatetimeLocal(exam.scheduledEndAt),
     },
   });
 
@@ -84,8 +83,8 @@ function EditExamModal({ exam, onClose }: { exam: Exam; onClose: () => void }) {
     mutationFn: (data: ExamFormData) => {
       const payload: Partial<CreateExamRequest> = {
         ...data,
-        scheduledStartAt: data.scheduledStartAt || undefined,
-        scheduledEndAt: data.scheduledEndAt || undefined,
+        scheduledStartAt: datetimeLocalToIsoUtc(data.scheduledStartAt),
+        scheduledEndAt: datetimeLocalToIsoUtc(data.scheduledEndAt),
       };
       return examsApi.update(exam.id, payload);
     },
@@ -129,10 +128,12 @@ function EditExamModal({ exam, onClose }: { exam: Exam; onClose: () => void }) {
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700">Scheduled Start</label>
             <Input type="datetime-local" {...register("scheduledStartAt")} />
+            <p className="mt-1 text-xs text-slate-500">Your local timezone</p>
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700">Scheduled End</label>
             <Input type="datetime-local" {...register("scheduledEndAt")} />
+            <p className="mt-1 text-xs text-slate-500">Your local timezone</p>
           </div>
         </div>
         <div className="flex justify-end gap-3 pt-2">
@@ -160,10 +161,12 @@ type QuestionFormData = z.infer<typeof questionSchema>;
 function QuestionFormModal({
   question,
   examId,
+  nextSortOrder,
   onClose,
 }: {
   question: QuestionAdmin | null;
   examId: string;
+  nextSortOrder: number;
   onClose: () => void;
 }) {
   const qc = useQueryClient();
@@ -180,7 +183,7 @@ function QuestionFormModal({
       option3: question?.option3 ?? "",
       option4: question?.option4 ?? "",
       correctOptionIndex: question?.correctOptionIndex ?? 0,
-      sortOrder: question?.sortOrder ?? 0,
+      sortOrder: question?.sortOrder ?? nextSortOrder,
     },
   });
 
@@ -266,6 +269,7 @@ export default function AdminExamDetailPage() {
   // Questions tab state
   const [questionForm, setQuestionForm] = useState<QuestionAdmin | null | "new">(null);
   const [deleteQuestionTarget, setDeleteQuestionTarget] = useState<QuestionAdmin | null>(null);
+  const [showBulkUpload, setShowBulkUpload] = useState(false);
 
   // Attempts tab state
   const [attemptsPage, setAttemptsPage] = useState(1);
@@ -324,6 +328,7 @@ export default function AdminExamDetailPage() {
   if (examLoading) return <FullPageSpinner />;
   if (!exam) return <p className="py-20 text-center text-slate-500">Exam not found.</p>;
 
+  const canManageQuestions = exam.status !== "Active";
   const status = STATUS_BADGE[exam.status] ?? STATUS_BADGE.Draft;
   const tabs: { key: TabKey; label: string }[] = [
     { key: "info", label: "Info" },
@@ -428,13 +433,13 @@ export default function AdminExamDetailPage() {
               {exam.scheduledStartAt && (
                 <div>
                   <dt className="text-slate-500">Scheduled Start</dt>
-                  <dd className="mt-0.5 text-slate-900">{formatDate(exam.scheduledStartAt)}</dd>
+                  <dd className="mt-0.5 text-slate-900">{formatDateTime(exam.scheduledStartAt)}</dd>
                 </div>
               )}
               {exam.scheduledEndAt && (
                 <div>
                   <dt className="text-slate-500">Scheduled End</dt>
-                  <dd className="mt-0.5 text-slate-900">{formatDate(exam.scheduledEndAt)}</dd>
+                  <dd className="mt-0.5 text-slate-900">{formatDateTime(exam.scheduledEndAt)}</dd>
                 </div>
               )}
               {!exam.scheduledStartAt && !exam.scheduledEndAt && (
@@ -447,10 +452,31 @@ export default function AdminExamDetailPage() {
 
       {activeTab === "questions" && (
         <div>
-          <div className="mb-4 flex justify-end">
-            <Button size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setQuestionForm("new")}>
-              Add Question
-            </Button>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            {exam.status === "Active" && (
+              <p className="text-sm text-amber-700">
+                Questions cannot be added while the exam is active. Unpublish first to make changes.
+              </p>
+            )}
+            <div className="ml-auto flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                leftIcon={<Upload className="h-4 w-4" />}
+                disabled={!canManageQuestions}
+                onClick={() => setShowBulkUpload(true)}
+              >
+                Bulk Upload
+              </Button>
+              <Button
+                size="sm"
+                leftIcon={<Plus className="h-4 w-4" />}
+                disabled={!canManageQuestions}
+                onClick={() => setQuestionForm("new")}
+              >
+                Add Question
+              </Button>
+            </div>
           </div>
           <Table>
             <TableHeader>
@@ -544,7 +570,9 @@ export default function AdminExamDetailPage() {
                         {attempt.score != null ? `${attempt.score}%` : "—"}
                       </TableCell>
                       <TableCell>
-                        {attempt.status === "Completed" && attempt.isPassed != null ? (
+                        {attempt.status === "TimedOut" ? (
+                          <span className="text-xs font-medium text-amber-600">Timed Out</span>
+                        ) : attempt.status === "Completed" && attempt.isPassed != null ? (
                           attempt.isPassed ? (
                             <span className="flex items-center gap-1 text-xs font-medium text-green-600">
                               <CheckCircle className="h-3.5 w-3.5" /> Pass
@@ -616,7 +644,15 @@ export default function AdminExamDetailPage() {
         <QuestionFormModal
           question={questionForm === "new" ? null : questionForm}
           examId={examId}
+          nextSortOrder={(questions?.length ?? 0) + 1}
           onClose={() => setQuestionForm(null)}
+        />
+      )}
+
+      {showBulkUpload && (
+        <BulkUploadQuestionsModal
+          examId={examId}
+          onClose={() => setShowBulkUpload(false)}
         />
       )}
 
@@ -653,50 +689,7 @@ export default function AdminExamDetailPage() {
       />
 
       {viewAttempt && (
-        <Modal isOpen onClose={() => setViewAttempt(null)} title="Attempt Detail" size="lg">
-          <div className="space-y-5">
-            <div className="rounded-lg bg-slate-50 p-4">
-              <p className="text-sm font-semibold text-slate-900">{viewAttempt.exam.title}</p>
-              <p className="mt-0.5 text-xs text-slate-500">Started {formatDate(viewAttempt.startedAt)}</p>
-            </div>
-            {viewAttempt.status === "Completed" && viewAttempt.score != null && (
-              <div className="flex items-center gap-4">
-                <div className={`flex h-20 w-20 shrink-0 flex-col items-center justify-center rounded-full border-4 font-bold ${
-                  viewAttempt.isPassed ? "border-green-400 text-green-600" : "border-red-400 text-red-600"
-                }`}>
-                  <span className="text-2xl">{viewAttempt.score}%</span>
-                </div>
-                <div>
-                  <p className="flex items-center gap-1.5 font-semibold text-slate-900">
-                    {viewAttempt.isPassed ? <CheckCircle className="h-5 w-5 text-green-500" /> : <XCircle className="h-5 w-5 text-red-500" />}
-                    {viewAttempt.isPassed ? "Passed" : "Failed"}
-                  </p>
-                  <p className="mt-1 text-sm text-slate-500">
-                    Score: {viewAttempt.score}% · Pass threshold: {viewAttempt.exam.passingPercentage}%
-                  </p>
-                </div>
-              </div>
-            )}
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Started</p>
-                <p className="mt-0.5 text-slate-900">{formatDate(viewAttempt.startedAt)}</p>
-              </div>
-              {viewAttempt.completedAt && (
-                <div>
-                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Completed</p>
-                  <p className="mt-0.5 text-slate-900">{formatDate(viewAttempt.completedAt)}</p>
-                </div>
-              )}
-              <div>
-                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Status</p>
-                <Badge variant={ATTEMPT_STATUS_BADGE[viewAttempt.status].variant} dot className="mt-0.5">
-                  {ATTEMPT_STATUS_BADGE[viewAttempt.status].label}
-                </Badge>
-              </div>
-            </div>
-          </div>
-        </Modal>
+        <AttemptDetailModal attempt={viewAttempt} onClose={() => setViewAttempt(null)} />
       )}
     </div>
   );

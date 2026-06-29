@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Pencil, Trash2, HelpCircle, CheckCircle, XCircle } from "lucide-react";
+import { Plus, Pencil, Trash2, HelpCircle, CheckCircle, XCircle, Upload } from "lucide-react";
 import toast from "react-hot-toast";
 import { examsApi } from "@/lib/exams";
 import { getApiErrorMessage } from "@/lib/api";
@@ -19,6 +19,7 @@ import {
   Table, TableHeader, TableBody, TableRow,
   TableHead, TableCell, TableEmpty,
 } from "@/components/ui/table";
+import { BulkUploadQuestionsModal } from "@/components/admin/BulkUploadQuestionsModal";
 import type { QuestionAdmin, CreateQuestionRequest } from "@/types";
 
 const questionSchema = z.object({
@@ -165,6 +166,7 @@ export default function AdminQuestionsPage() {
   const [examFilter, setExamFilter] = useState(defaultExamId);
   const [formTarget, setFormTarget] = useState<QuestionAdmin | null | "new">(null);
   const [deleteTarget, setDeleteTarget] = useState<QuestionAdmin | null>(null);
+  const [showBulkUpload, setShowBulkUpload] = useState(false);
 
   const { data: examsData } = useQuery({
     queryKey: ["admin", "exams", "all"],
@@ -193,21 +195,32 @@ export default function AdminQuestionsPage() {
   });
 
   const selectedExam = exams.find((e) => e.id === examFilter);
+  const canManageQuestions = !!examFilter && selectedExam?.status !== "Active";
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="page-title">Question Bank</h1>
           <p className="page-subtitle">Manage questions for each exam.</p>
         </div>
-        <Button
-          leftIcon={<Plus className="h-4 w-4" />}
-          onClick={() => setFormTarget("new")}
-          disabled={!examFilter}
-        >
-          Add Question
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            leftIcon={<Upload className="h-4 w-4" />}
+            onClick={() => setShowBulkUpload(true)}
+            disabled={!canManageQuestions}
+          >
+            Bulk Upload
+          </Button>
+          <Button
+            leftIcon={<Plus className="h-4 w-4" />}
+            onClick={() => setFormTarget("new")}
+            disabled={!canManageQuestions}
+          >
+            Add Question
+          </Button>
+        </div>
       </div>
 
       <div className="mb-6 w-80">
@@ -235,14 +248,21 @@ export default function AdminQuestionsPage() {
       ) : (
         <>
           {selectedExam && (
-            <div className="mb-4 flex items-center gap-3 rounded-lg bg-primary-50 px-4 py-3">
-              <HelpCircle className="h-5 w-5 text-primary-600" />
-              <div>
-                <p className="text-sm font-semibold text-primary-900">{selectedExam.title}</p>
-                <p className="text-xs text-primary-600">
-                  {questions?.length ?? 0} questions · {selectedExam.durationMinutes}m · Pass: {selectedExam.passingPercentage}%
-                </p>
+            <div className="mb-4 space-y-3">
+              <div className="flex items-center gap-3 rounded-lg bg-primary-50 px-4 py-3">
+                <HelpCircle className="h-5 w-5 text-primary-600" />
+                <div>
+                  <p className="text-sm font-semibold text-primary-900">{selectedExam.title}</p>
+                  <p className="text-xs text-primary-600">
+                    {questions?.length ?? 0} questions · {selectedExam.durationMinutes}m · Pass: {selectedExam.passingPercentage}%
+                  </p>
+                </div>
               </div>
+              {selectedExam.status === "Active" && (
+                <p className="text-sm text-amber-700">
+                  Questions cannot be added while this exam is active. Unpublish it first to use bulk upload or add questions.
+                </p>
+              )}
             </div>
           )}
 
@@ -332,6 +352,13 @@ export default function AdminQuestionsPage() {
           defaultExamId={examFilter}
           exams={exams.map((e) => ({ id: e.id, title: e.title }))}
           onClose={() => setFormTarget(null)}
+        />
+      )}
+
+      {showBulkUpload && examFilter && (
+        <BulkUploadQuestionsModal
+          examId={examFilter}
+          onClose={() => setShowBulkUpload(false)}
         />
       )}
 

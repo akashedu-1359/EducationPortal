@@ -1,18 +1,29 @@
 "use client";
 
 import { useEffect, useRef, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import { paymentsApi } from "@/lib/payments";
+import { useFeatureFlag } from "@/components/common/FeatureGate";
+import { FullPageSpinner } from "@/components/ui/spinner";
 
 function CheckoutSuccessContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const paymentsEnabled = useFeatureFlag("enable_payments");
   const ran = useRef(false);
+
+  useEffect(() => {
+    if (paymentsEnabled === false) {
+      router.replace("/dashboard");
+    }
+  }, [paymentsEnabled, router]);
 
   // For Stripe redirect flow — verify payment after redirect
   useEffect(() => {
+    if (paymentsEnabled !== true) return;
     if (ran.current) return;
     ran.current = true;
 
@@ -26,7 +37,10 @@ function CheckoutSuccessContent() {
         .then(() => toast.success("Payment confirmed!"))
         .catch(() => toast.error("Payment verification issue. Please contact support."));
     }
-  }, [searchParams]);
+  }, [searchParams, paymentsEnabled]);
+
+  if (paymentsEnabled === null) return <FullPageSpinner />;
+  if (!paymentsEnabled) return null;
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 text-center">

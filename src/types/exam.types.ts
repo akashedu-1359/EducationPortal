@@ -1,4 +1,4 @@
-export type ExamStatus = "Draft" | "Active" | "Completed";
+export type ExamStatus = "Draft" | "Scheduled" | "Active" | "Completed";
 export type AttemptStatus = "InProgress" | "Completed" | "TimedOut";
 
 export interface Question {
@@ -95,6 +95,9 @@ export interface UserExamDetailDto {
   questionCount: number;
   userAttemptCount: number;
   createdAt: string;
+  scheduledStartAt?: string;
+  scheduledEndAt?: string;
+  isTakeable: boolean;
 }
 
 export interface UserAttemptDto {
@@ -144,4 +147,18 @@ export interface CreateQuestionRequest {
   correctOptionIndex: number;
   explanation?: string;
   sortOrder?: number;
+}
+
+export interface BulkQuestionInput {
+  questionText: string;
+  option1: string;
+  option2: string;
+  option3: string;
+  option4: string;
+  correctOptionIndex: number;
+  sortOrder?: number;
+}
+
+export interface BulkAddQuestionsResponse {
+  addedCount: number;
 }

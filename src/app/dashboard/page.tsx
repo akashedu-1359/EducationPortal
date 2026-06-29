@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { BookOpen, Award, GraduationCap, ArrowRight } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
+import { useFeatureFlag } from "@/components/common/FeatureGate";
 import { resourcesApi } from "@/lib/resources";
 import { examsApi } from "@/lib/exams";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,19 +14,32 @@ import { formatDate } from "@/lib/utils";
 import Image from "next/image";
 
 export default function DashboardOverviewPage() {
-  const { user } = useAuthStore();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuthStore();
+  const examsEnabled = useFeatureFlag("enable_exams");
+  const certificatesEnabled = useFeatureFlag("enable_certificates");
+  const authReady = isAuthenticated && !authLoading;
 
   const { data: enrollments, isLoading } = useQuery({
     queryKey: ["my-enrollments"],
     queryFn: resourcesApi.getMyEnrollments,
+    enabled: authReady,
   });
 
   const { data: attemptsData } = useQuery({
     queryKey: ["my-attempts-stats"],
     queryFn: () => examsApi.getMyAttempts({ pageNumber: 1, pageSize: 1 }),
+    enabled: authReady && examsEnabled === true,
   });
 
   const recentEnrollments = enrollments?.slice(0, 4) || [];
+  const statCardCount =
+    1 + (examsEnabled ? 1 : 0) + (certificatesEnabled ? 1 : 0);
+  const statGridClass =
+    statCardCount === 3
+      ? "sm:grid-cols-3"
+      : statCardCount === 2
+        ? "sm:grid-cols-2"
+        : "sm:grid-cols-1";
 
   return (
     <div className="space-y-6">
@@ -36,7 +50,7 @@ export default function DashboardOverviewPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className={`grid grid-cols-1 gap-4 ${statGridClass}`}>
         <Card>
           <CardContent className="flex items-center gap-4 pt-6">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-100">
@@ -51,31 +65,35 @@ export default function DashboardOverviewPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="flex items-center gap-4 pt-6">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100">
-              <GraduationCap className="h-6 w-6 text-amber-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-slate-900">
-                {attemptsData?.totalCount ?? "—"}
-              </p>
-              <p className="text-sm text-slate-500">Exams taken</p>
-            </div>
-          </CardContent>
-        </Card>
+        {examsEnabled && (
+          <Card>
+            <CardContent className="flex items-center gap-4 pt-6">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100">
+                <GraduationCap className="h-6 w-6 text-amber-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-slate-900">
+                  {attemptsData?.totalCount ?? "—"}
+                </p>
+                <p className="text-sm text-slate-500">Exams taken</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-        <Card>
-          <CardContent className="flex items-center gap-4 pt-6">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-100">
-              <Award className="h-6 w-6 text-green-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-slate-900">—</p>
-              <p className="text-sm text-slate-500">Certificates</p>
-            </div>
-          </CardContent>
-        </Card>
+        {certificatesEnabled && (
+          <Card>
+            <CardContent className="flex items-center gap-4 pt-6">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-100">
+                <Award className="h-6 w-6 text-green-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-slate-900">—</p>
+                <p className="text-sm text-slate-500">Certificates</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Recent enrollments */}

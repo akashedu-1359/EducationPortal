@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -10,7 +10,6 @@ import {
   Target,
   RotateCcw,
   PlayCircle,
-  LogIn,
   CheckCircle,
   XCircle,
   AlertCircle,
@@ -18,11 +17,10 @@ import {
 import toast from "react-hot-toast";
 import { examsApi } from "@/lib/exams";
 import { getApiErrorMessage } from "@/lib/api";
-import { useAuthStore } from "@/store/authStore";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatDuration, formatDate } from "@/lib/utils";
+import { formatDuration, formatDateTime, formatDate } from "@/lib/utils";
 import type { AttemptStatus } from "@/types";
 
 const STATUS_CONFIG: Record<AttemptStatus, { label: string; variant: "info" | "success" | "warning" }> = {
@@ -34,9 +32,15 @@ const STATUS_CONFIG: Record<AttemptStatus, { label: string; variant: "info" | "s
 export default function ExamDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const examId = params.slug as string;
-  const { isAuthenticated } = useAuthStore();
   const [isStarting, setIsStarting] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("timedOut") !== "1") return;
+    toast.error("Time's up. The exam was closed without submission.");
+    router.replace(`/exams/${examId}`);
+  }, [searchParams, router, examId]);
 
   const { data: exam, isLoading: examLoading } = useQuery({
     queryKey: ["exam-detail", examId],
@@ -46,7 +50,6 @@ export default function ExamDetailPage() {
   const { data: attempts, isLoading: attemptsLoading } = useQuery({
     queryKey: ["my-attempts", examId],
     queryFn: () => examsApi.getMyAttempts({ examId }),
-    enabled: isAuthenticated,
   });
 
   const userAttempts = attempts?.items ?? [];
@@ -86,7 +89,7 @@ export default function ExamDetailPage() {
       <div className="py-20 text-center">
         <AlertCircle className="mx-auto mb-4 h-12 w-12 text-slate-300" />
         <p className="text-lg font-medium text-slate-900">Exam not found</p>
-        <Link href="/exams" className="mt-2 inline-block text-sm text-primary-600 hover:underline">
+        <Link href="/dashboard/exams" className="mt-2 inline-block text-sm text-primary-600 hover:underline">
           Browse exams &rarr;
         </Link>
       </div>
@@ -132,12 +135,18 @@ export default function ExamDetailPage() {
 
         {/* CTA */}
         <div className="mb-8">
-          {!isAuthenticated ? (
-            <Link href={`/auth/login?next=/exams/${examId}`}>
-              <Button variant="primary" size="lg" leftIcon={<LogIn className="h-5 w-5" />}>
-                Login to Take This Exam
-              </Button>
-            </Link>
+          {!exam.isTakeable && exam.scheduledStartAt ? (
+            <div className="rounded-xl border border-blue-200 bg-blue-50 px-5 py-4">
+              <p className="font-medium text-blue-800">This exam is not open yet</p>
+              <p className="mt-1 text-sm text-blue-600">
+                Opens on {formatDateTime(exam.scheduledStartAt)}
+                {exam.scheduledEndAt ? ` and closes on ${formatDateTime(exam.scheduledEndAt)}` : ""}.
+              </p>
+            </div>
+          ) : !exam.isTakeable ? (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-5 py-4">
+              <p className="font-medium text-amber-800">This exam is not currently available</p>
+            </div>
           ) : maxReached ? (
             <div className="rounded-xl border border-amber-200 bg-amber-50 px-5 py-4">
               <p className="font-medium text-amber-800">
@@ -161,8 +170,7 @@ export default function ExamDetailPage() {
         </div>
 
         {/* Past attempts */}
-        {isAuthenticated && (
-          <div>
+        <div>
             <h2 className="section-title mb-4">Your Attempts</h2>
             {attemptsLoading ? (
               <div className="space-y-3">
@@ -226,7 +234,6 @@ export default function ExamDetailPage() {
               </div>
             )}
           </div>
-        )}
       </div>
     </div>
   );

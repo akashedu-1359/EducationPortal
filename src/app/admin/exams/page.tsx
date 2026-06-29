@@ -13,7 +13,7 @@ import {
 import toast from "react-hot-toast";
 import { examsApi } from "@/lib/exams";
 import { getApiErrorMessage } from "@/lib/api";
-import { formatDate } from "@/lib/utils";
+import { formatDate, datetimeLocalToIsoUtc, isoUtcToDatetimeLocal } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +29,7 @@ import type { Exam, CreateExamRequest } from "@/types";
 
 const STATUS_BADGE = {
   Draft: { label: "Draft", variant: "default" as const },
+  Scheduled: { label: "Scheduled", variant: "info" as const },
   Active: { label: "Active", variant: "success" as const },
   Completed: { label: "Completed", variant: "warning" as const },
 };
@@ -64,12 +65,8 @@ function ExamFormModal({
       passingPercentage: exam?.passingPercentage ?? 60,
       durationMinutes: exam?.durationMinutes ?? 30,
       maxAttempts: exam?.maxAttempts ?? 3,
-      scheduledStartAt: exam?.scheduledStartAt
-        ? new Date(exam.scheduledStartAt).toISOString().slice(0, 16)
-        : "",
-      scheduledEndAt: exam?.scheduledEndAt
-        ? new Date(exam.scheduledEndAt).toISOString().slice(0, 16)
-        : "",
+      scheduledStartAt: isoUtcToDatetimeLocal(exam?.scheduledStartAt),
+      scheduledEndAt: isoUtcToDatetimeLocal(exam?.scheduledEndAt),
     },
   });
 
@@ -81,12 +78,12 @@ function ExamFormModal({
         passingPercentage: data.passingPercentage,
         durationMinutes: data.durationMinutes,
         maxAttempts: data.maxAttempts,
-        scheduledStartAt: data.scheduledStartAt || undefined,
-        scheduledEndAt: data.scheduledEndAt || undefined,
+        scheduledStartAt: datetimeLocalToIsoUtc(data.scheduledStartAt),
+        scheduledEndAt: datetimeLocalToIsoUtc(data.scheduledEndAt),
       };
       return exam
         ? examsApi.update(exam.id, payload)
-        : examsApi.create({ ...payload, questions: [] } as CreateExamRequest);
+        : examsApi.create(payload as CreateExamRequest);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin", "exams"] });
@@ -141,10 +138,12 @@ function ExamFormModal({
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700">Scheduled Start</label>
             <Input type="datetime-local" {...register("scheduledStartAt")} />
+            <p className="mt-1 text-xs text-slate-500">Your local timezone</p>
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700">Scheduled End</label>
             <Input type="datetime-local" {...register("scheduledEndAt")} />
+            <p className="mt-1 text-xs text-slate-500">Your local timezone</p>
           </div>
         </div>
 

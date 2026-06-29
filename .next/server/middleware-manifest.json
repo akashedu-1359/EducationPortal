@@ -3,7 +3,6 @@
   "middleware": {
     "/": {
       "files": [
-        "prerender-manifest.js",
         "server/edge-runtime-webpack.js",
         "server/src/middleware.js"
       ],
@@ -11,47 +10,16 @@
       "page": "/",
       "matchers": [
         {
-          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?(?:\\/((?!_next\\/static|_next\\/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*))(.json)?[\\/#\\?]?$",
-          "originalSource": "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"
+          "regexp": "^/.*$",
+          "originalSource": "/:path*"
         }
       ],
       "wasm": [],
       "assets": [],
-      "environments": {
-        "previewModeId": "c60be3b0720b65de71b64c23926dadfb",
-        "previewModeSigningKey": "62c05d61e3fc5063afff4ddaeed976aac6166fa19e89e837cdcca914cffd9ae2",
-        "previewModeEncryptionKey": "16eaecc9d4e33f75ed9b494f85536d3913390db0302f41e338f4eb5f64d25fd8"
-      }
+      "environments": {}
     }
   },
-  "functions": {
-    "/api/health/route": {
-      "files": [
-        "server/middleware-build-manifest.js",
-        "server/middleware-react-loadable-manifest.js",
-        "server/next-font-manifest.js",
-        "server/interception-route-rewrite-manifest.js",
-        "prerender-manifest.js",
-        "server/edge-runtime-webpack.js",
-        "server/app/api/health/route.js"
-      ],
-      "name": "app/api/health/route",
-      "page": "/api/health/route",
-      "matchers": [
-        {
-          "regexp": "^/api/health$",
-          "originalSource": "/api/health"
-        }
-      ],
-      "wasm": [],
-      "assets": [],
-      "environments": {
-        "previewModeId": "c60be3b0720b65de71b64c23926dadfb",
-        "previewModeSigningKey": "62c05d61e3fc5063afff4ddaeed976aac6166fa19e89e837cdcca914cffd9ae2",
-        "previewModeEncryptionKey": "16eaecc9d4e33f75ed9b494f85536d3913390db0302f41e338f4eb5f64d25fd8"
-      }
-    }
-  },
+  "functions": {},
   "sortedMiddleware": [
     "/"
   ]

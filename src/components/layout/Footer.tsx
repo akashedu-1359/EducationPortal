@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { GraduationCap, Twitter, Linkedin, Youtube, Facebook, Instagram } from "lucide-react";
-import { useAuthStore } from "@/store/authStore";
+import { useAuthStore, getHomeHref } from "@/store/authStore";
 
 const FOOTER_LINKS = {
   Learn: [
     { label: "Video Courses", href: "/resources?type=Video" },
     { label: "PDF Resources", href: "/resources?type=PDF" },
     { label: "Blog Articles", href: "/resources?type=Blog" },
-    { label: "Practice Exams", href: "/exams" },
+    { label: "Practice Exams", href: "/dashboard/exams" },
   ],
   Company: [
     { label: "About Us", href: "/about" },
@@ -40,7 +40,8 @@ const SOCIAL_LINKS = [
 ];
 
 export function Footer() {
-  const { isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
+  const homeHref = getHomeHref(user, isAuthenticated);
   const visibleLinks = Object.entries(FOOTER_LINKS).filter(
     ([title]) => title !== "Learn" || isAuthenticated
   );
@@ -52,7 +53,7 @@ export function Footer() {
         <div className="grid grid-cols-2 gap-8 lg:grid-cols-6">
           {/* Brand */}
           <div className="col-span-2">
-            <Link href="/" className="flex items-center gap-2 font-bold text-white">
+            <Link href={homeHref} className="flex items-center gap-2 font-bold text-white">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-600 text-white">
                 <GraduationCap className="h-5 w-5" />
               </div>

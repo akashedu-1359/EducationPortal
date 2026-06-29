@@ -18,11 +18,36 @@ export function formatCurrency(
 }
 
 export function formatDate(date: string | Date): string {
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat(undefined, {
     year: "numeric",
     month: "short",
     day: "numeric",
   }).format(new Date(date));
+}
+
+/** Date and time in the user's local timezone (e.g. 4:35 PM IST for India, converted for other regions). */
+export function formatDateTime(date: string | Date): string {
+  return new Intl.DateTimeFormat(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(date));
+}
+
+/** Converts datetime-local input (browser local time) to ISO UTC for the API. */
+export function datetimeLocalToIsoUtc(local: string | undefined): string | undefined {
+  if (!local) return undefined;
+  return new Date(local).toISOString();
+}
+
+/** Converts UTC ISO from the API to a datetime-local input value in browser local time. */
+export function isoUtcToDatetimeLocal(iso: string | undefined): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 export function formatRelativeTime(date: string | Date): string {
@@ -65,6 +90,11 @@ export function slugify(text: string): string {
     .replace(/[^\w\s-]/g, "")
     .replace(/[\s_-]+/g, "-")
     .replace(/^-+|-+$/g, "");
+}
+
+export function formatExamScore(score: number): string {
+  const rounded = Math.round(score * 100) / 100;
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2).replace(/\.?0+$/, "");
 }
 
 export function getInitials(name: string): string {

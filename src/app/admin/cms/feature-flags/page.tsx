@@ -19,7 +19,10 @@ export default function AdminFeatureFlagsPage() {
   const toggleMutation = useMutation({
     mutationFn: ({ key, value }: { key: string; value: boolean }) =>
       cmsAdminApi.updateFeatureFlag(key, value),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "cms", "feature-flags"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin", "cms", "feature-flags"] });
+      qc.invalidateQueries({ queryKey: ["cms", "feature-flags"] });
+    },
     onError: (err) => toast.error(getApiErrorMessage(err)),
   });
 

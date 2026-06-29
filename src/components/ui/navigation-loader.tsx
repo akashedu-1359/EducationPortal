@@ -27,6 +27,14 @@ function NavigationLoaderInner() {
         href === currentPath.current
       ) return;
 
+      // Middleware redirects / back to dashboard/admin — skip loader (pathname won't change)
+      if (
+        href === "/" &&
+        (currentPath.current === "/dashboard" || currentPath.current === "/admin")
+      ) {
+        return;
+      }
+
       setLoading(true);
     };
 
@@ -39,6 +47,13 @@ function NavigationLoaderInner() {
     currentPath.current = pathname;
     setLoading(false);
   }, [pathname, searchParams]);
+
+  // Safety net: middleware may redirect back to the same path (e.g. / → /dashboard)
+  useEffect(() => {
+    if (!loading) return;
+    const id = setTimeout(() => setLoading(false), 2500);
+    return () => clearTimeout(id);
+  }, [loading]);
 
   if (!loading) return null;
 

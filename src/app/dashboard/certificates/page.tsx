@@ -1,16 +1,33 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Award } from "lucide-react";
 import { certificatesApi } from "@/lib/certificates";
 import { CertificateCard } from "@/components/content/CertificateCard";
+import { useFeatureFlag } from "@/components/common/FeatureGate";
+import { FullPageSpinner } from "@/components/ui/spinner";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DashboardCertificatesPage() {
+  const router = useRouter();
+  const certificatesEnabled = useFeatureFlag("enable_certificates");
+
   const { data: certificates, isLoading } = useQuery({
     queryKey: ["my-certificates"],
     queryFn: certificatesApi.getMyCertificates,
+    enabled: certificatesEnabled === true,
   });
+
+  useEffect(() => {
+    if (certificatesEnabled === false) {
+      router.replace("/dashboard");
+    }
+  }, [certificatesEnabled, router]);
+
+  if (certificatesEnabled === null) return <FullPageSpinner />;
+  if (!certificatesEnabled) return null;
 
   return (
     <div>

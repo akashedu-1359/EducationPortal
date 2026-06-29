@@ -221,11 +221,16 @@ export const handlers = [
   }),
 
   // CMS - Feature Flags
-  http.get(`${BASE_URL}/cms/feature-flags`, () => {
+  http.get(`${BASE_URL}/cms/features`, () => {
     return HttpResponse.json({
       success: true,
       message: "OK",
-      data: { show_blog_section: true, enable_exams: true, maintenance_mode: false },
+      data: [
+        { key: "enable_exams", isEnabled: true },
+        { key: "enable_payments", isEnabled: true },
+        { key: "enable_certificates", isEnabled: true },
+        { key: "maintenance_mode", isEnabled: false },
+      ],
     });
   }),
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { CreditCard, Shield, ArrowLeft } from "lucide-react";
@@ -11,8 +11,9 @@ import { paymentsApi } from "@/lib/payments";
 import { getApiErrorMessage } from "@/lib/api";
 import { config } from "@/config";
 import { Button } from "@/components/ui/button";
-import { FullBookLoader } from "@/components/ui/book-loader";
 import { useRequireAuth } from "@/hooks/useAuth";
+import { useFeatureFlag } from "@/components/common/FeatureGate";
+import { FullPageSpinner } from "@/components/ui/spinner";
 
 interface Props {
   params: { resourceId: string };
@@ -21,6 +22,7 @@ interface Props {
 export default function CheckoutPage({ params }: Props) {
   const router = useRouter();
   const { isLoading: authLoading } = useRequireAuth();
+  const paymentsEnabled = useFeatureFlag("enable_payments");
   const [selectedProvider, setSelectedProvider] = useState<"Stripe" | "Razorpay">(
     config.stripePublishableKey ? "Stripe" : "Razorpay"
   );
@@ -123,7 +125,14 @@ export default function CheckoutPage({ params }: Props) {
     createOrderMutation.mutate();
   };
 
-  if (authLoading) return <FullBookLoader />;
+  useEffect(() => {
+    if (paymentsEnabled === false) {
+      router.replace("/resources");
+    }
+  }, [paymentsEnabled, router]);
+
+  if (authLoading || paymentsEnabled === null) return <FullPageSpinner />;
+  if (!paymentsEnabled) return null;
 
   return (
     <div className="min-h-screen bg-slate-50 py-12">

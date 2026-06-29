@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { User } from "@/types";
 import { config } from "@/config";
-import { setAccessToken } from "@/lib/api";
+import { getAccessToken, setAccessToken } from "@/lib/api";
 import { authApi } from "@/lib/auth";
 
 interface AuthState {
@@ -32,7 +32,7 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       user: null,
       isAuthenticated: false,
-      isLoading: false,
+      isLoading: true,
 
       login: async (email, password) => {
         set({ isLoading: true });
@@ -80,9 +80,13 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      // Called once on app mount to restore session from httpOnly cookie
+      // Restore session from httpOnly refresh cookie when in-memory token is missing
       hydrate: async () => {
-        if (get().isAuthenticated) return; // already hydrated
+        if (getAccessToken()) {
+          set({ isLoading: false });
+          return;
+        }
+
         set({ isLoading: true });
         try {
           const { default: axios } = await import("axios");
@@ -96,7 +100,8 @@ export const useAuthStore = create<AuthState>()(
             setAccessToken(data.accessToken);
             set({ user: data.user, isAuthenticated: true, isLoading: false });
           } else {
-            set({ isLoading: false });
+            setAccessToken(null);
+            set({ user: null, isAuthenticated: false, isLoading: false });
           }
         } catch {
           setAccessToken(null);
@@ -131,3 +136,9 @@ export const isAdmin = (user: User | null): boolean =>
 
 export const isSuperAdmin = (user: User | null): boolean =>
   user?.role === "SuperAdmin";
+
+/** Logo/home link — avoids redirect loops for logged-in users. */
+export function getHomeHref(user: User | null, isAuthenticated: boolean): string {
+  if (!isAuthenticated) return "/";
+  return isAdmin(user) ? "/admin" : "/dashboard";
+}

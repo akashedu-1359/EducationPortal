@@ -66,12 +66,9 @@ export function useHasRole(...roles: UserRole[]): boolean {
 
 /** Hydrates auth state from refresh cookie on app start. Runs once. */
 export function useHydrateAuth() {
-  const { hydrate, isAuthenticated } = useAuthStore();
+  const hydrate = useAuthStore((s) => s.hydrate);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      hydrate();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    void hydrate();
+  }, [hydrate]);
 }

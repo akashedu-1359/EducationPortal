@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useCallback, useRef } from "react";
+import { useEffect, useCallback, useRef, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { CheckCircle, ChevronLeft, ChevronRight, Send } from "lucide-react";
+import { CheckCircle, ChevronLeft, ChevronRight, Send, Clock } from "lucide-react";
 import toast from "react-hot-toast";
 import { useExamStore } from "@/store/examStore";
 import { examsApi } from "@/lib/exams";
@@ -36,7 +36,8 @@ export default function ExamAttemptPage() {
   } = useExamStore();
 
   const timerRef = useRef<ReturnType<typeof setInterval>>();
-  const autoSubmitRef = useRef(false);
+  const timeOutRef = useRef(false);
+  const [showTimedOut, setShowTimedOut] = useState(false);
 
   useEffect(() => {
     examsApi.getDetail(slug).then((detail) => {
@@ -54,9 +55,8 @@ export default function ExamAttemptPage() {
     return () => clearInterval(timerRef.current);
   }, [!!delivery]);
 
-  const submitExam = useCallback(async (auto = false) => {
-    if (!delivery || isSubmitting || autoSubmitRef.current) return;
-    if (auto) autoSubmitRef.current = true;
+  const submitExam = useCallback(async () => {
+    if (!delivery || isSubmitting || timeOutRef.current) return;
 
     setSubmitting(true);
     clearInterval(timerRef.current);
@@ -66,19 +66,51 @@ export default function ExamAttemptPage() {
         attemptId: delivery.attemptId,
         answers: getAnswers(),
       });
-      toast.success(auto ? "Time's up! Exam submitted." : "Exam submitted!");
+      toast.success("Exam submitted!");
       router.push(`/exams/results/${delivery.attemptId}`);
     } catch (err) {
       toast.error(getApiErrorMessage(err));
       setSubmitting(false);
     }
-  }, [delivery, isSubmitting, getAnswers]);
+  }, [delivery, isSubmitting, getAnswers, router]);
+
+  const handleTimeExpired = useCallback(async () => {
+    if (!delivery || isSubmitting || timeOutRef.current) return;
+    timeOutRef.current = true;
+    setShowTimedOut(true);
+
+    setSubmitting(true);
+    clearInterval(timerRef.current);
+
+    try {
+      await examsApi.timeOutAttempt(delivery.attemptId);
+    } catch {
+      // Attempt may already be timed out server-side; still close the exam view.
+    } finally {
+      toast.error("Time's up. The exam was closed without submission.");
+      clearExam();
+      router.push(`/exams/${slug}?timedOut=1`);
+    }
+  }, [delivery, isSubmitting, clearExam, router, slug]);
 
   useEffect(() => {
-    if (isExpired && !autoSubmitRef.current) {
-      submitExam(true);
+    if (isExpired && !timeOutRef.current) {
+      handleTimeExpired();
     }
-  }, [isExpired]);
+  }, [isExpired, handleTimeExpired]);
+
+  if (showTimedOut) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-6 text-center">
+        <Clock className="mb-4 h-12 w-12 text-amber-500" />
+        <p className="text-lg font-semibold text-slate-900">Time&apos;s up</p>
+        <p className="mt-2 max-w-md text-sm text-slate-500">
+          Your exam window has closed. This attempt was marked as timed out because it was not submitted.
+        </p>
+        <FullPageSpinner />
+      </div>
+    );
+  }
 
   if (!delivery) return <FullPageSpinner />;
 
@@ -120,7 +152,7 @@ export default function ExamAttemptPage() {
           variant="primary"
           leftIcon={<Send className="h-4 w-4" />}
           isLoading={isSubmitting}
-          onClick={() => submitExam(false)}
+          onClick={() => submitExam()}
         >
           Submit Exam
         </Button>
