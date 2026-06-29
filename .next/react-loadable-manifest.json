@@ -1,14 +1,44 @@
 {
-  "lib\\api.ts -> @/store/authStore": {
-    "id": "lib\\api.ts -> @/store/authStore",
+  "app\\admin\\analytics\\page.tsx -> @/components/admin/charts/EnrollmentChart": {
+    "id": 26368,
     "files": [
-      "static/chunks/_app-pages-browser_src_store_authStore_ts.js"
+      "static/chunks/8444.62e42870994f1085.js",
+      "static/chunks/6368.8a96c00ab82b32bb.js"
+    ]
+  },
+  "app\\admin\\analytics\\page.tsx -> @/components/admin/charts/RevenueChart": {
+    "id": 37390,
+    "files": [
+      "static/chunks/8444.62e42870994f1085.js",
+      "static/chunks/7390.7e896ee8ba46bd91.js"
+    ]
+  },
+  "app\\checkout\\[resourceId]\\page.tsx -> @stripe/stripe-js": {
+    "id": 13537,
+    "files": [
+      "static/chunks/3537.28dadb492c05c66c.js"
+    ]
+  },
+  "components\\admin\\RichTextEditor.tsx -> ./TiptapEditor": {
+    "id": 80003,
+    "files": [
+      "static/chunks/70e0d97a.49d1d2b6b981625d.js",
+      "static/chunks/54a60aa6.a9fa5f0d729cf8e4.js",
+      "static/chunks/70.70d4bcacdf375acd.js",
+      "static/chunks/9768.113740ac8308ecf5.js"
+    ]
+  },
+  "lib\\api.ts -> @/store/authStore": {
+    "id": 78347,
+    "files": [
+      "static/chunks/6151-8777bec62ec2186e.js",
+      "static/chunks/8347.e2e2e6e961961e9c.js"
     ]
   },
   "store\\authStore.ts -> axios": {
-    "id": "store\\authStore.ts -> axios",
+    "id": 86623,
     "files": [
-      "static/chunks/_app-pages-browser_node_modules_axios_index_js.js"
+      "static/chunks/6623.d295150d3a28de60.js"
     ]
   }
 }

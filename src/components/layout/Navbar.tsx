@@ -19,7 +19,7 @@ import { cn, getInitials } from "@/lib/utils";
 import { useAuthStore, getHomeHref } from "@/store/authStore";
 import { useFeatureFlag } from "@/components/common/FeatureGate";
 import { Button } from "@/components/ui/button";
-import { Dropdown } from "@/components/ui/dropdown";
+import { Dropdown, type DropdownItem } from "@/components/ui/dropdown";
 
 const BASE_NAV_LINKS = [
   { label: "Courses", href: "/resources?type=Video" },
@@ -42,7 +42,7 @@ export function Navbar() {
       : BASE_NAV_LINKS;
 
   const userMenuItems = useMemo(() => {
-    const items = [
+    const items: DropdownItem[] = [
       {
         label: "My Dashboard",
         icon: <LayoutDashboard className="h-4 w-4" />,

@@ -66,10 +66,13 @@ function QuestionFormModal({
   });
 
   const mutation = useMutation({
-    mutationFn: (data: CreateQuestionRequest) =>
-      question
-        ? examsApi.updateQuestion(question.id, data)
-        : examsApi.addQuestion(data),
+    mutationFn: async (data: CreateQuestionRequest) => {
+      if (question) {
+        await examsApi.updateQuestion(question.id, data);
+      } else {
+        await examsApi.addQuestion(data);
+      }
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin", "questions"] });
       toast.success(question ? "Question updated" : "Question created");

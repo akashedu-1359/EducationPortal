@@ -71,7 +71,7 @@ function ExamFormModal({
   });
 
   const mutation = useMutation({
-    mutationFn: (data: ExamFormData) => {
+    mutationFn: async (data: ExamFormData) => {
       const payload: Partial<CreateExamRequest> = {
         title: data.title,
         description: data.description,
@@ -81,9 +81,11 @@ function ExamFormModal({
         scheduledStartAt: datetimeLocalToIsoUtc(data.scheduledStartAt),
         scheduledEndAt: datetimeLocalToIsoUtc(data.scheduledEndAt),
       };
-      return exam
-        ? examsApi.update(exam.id, payload)
-        : examsApi.create(payload as CreateExamRequest);
+      if (exam) {
+        await examsApi.update(exam.id, payload);
+      } else {
+        await examsApi.create(payload as CreateExamRequest);
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin", "exams"] });

@@ -80,13 +80,13 @@ function EditExamModal({ exam, onClose }: { exam: Exam; onClose: () => void }) {
   });
 
   const mutation = useMutation({
-    mutationFn: (data: ExamFormData) => {
+    mutationFn: async (data: ExamFormData) => {
       const payload: Partial<CreateExamRequest> = {
         ...data,
         scheduledStartAt: datetimeLocalToIsoUtc(data.scheduledStartAt),
         scheduledEndAt: datetimeLocalToIsoUtc(data.scheduledEndAt),
       };
-      return examsApi.update(exam.id, payload);
+      await examsApi.update(exam.id, payload);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin", "exam", exam.id] });
@@ -188,11 +188,13 @@ function QuestionFormModal({
   });
 
   const mutation = useMutation({
-    mutationFn: (data: QuestionFormData) => {
+    mutationFn: async (data: QuestionFormData) => {
       const payload: CreateQuestionRequest = { ...data, examId };
-      return question
-        ? examsApi.updateQuestion(question.id, payload)
-        : examsApi.addQuestion(payload);
+      if (question) {
+        await examsApi.updateQuestion(question.id, payload);
+      } else {
+        await examsApi.addQuestion(payload);
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin", "exam-questions", examId] });

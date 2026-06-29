@@ -1,0 +1,1 @@
+{"version":1,"functions":{"/api/auth/logout":{},"/api/auth/login":{},"/api/auth/refresh":{},"/api/auth/register":{},"/api/health":{},"/maintenance":{}}}
